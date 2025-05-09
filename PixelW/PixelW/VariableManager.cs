@@ -16,10 +16,13 @@ namespace PixelW
                 return value;
             throw new Exception($"Variable no definida: '{varName}'");
         }
-        
+
         public bool Exists(string varName)
         {
-            variables.ContainsKey(varName);
+            if (string.IsNullOrEmpty(varName))
+                return false; // Caso borde
+
+            return variables.ContainsKey(varName);
         }
     }
 }

@@ -1,15 +1,156 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace PixelW
 {
     internal class CommandParser
     {
         private readonly WallE _robot;
+        private readonly VariableManager variables;
+        private int currentLineNumber;
+        private int ParseFunctionCall(string line)
+        {
+            if (line.StartsWith("GetActualX()")) return _robot.GetActualX();
+            if (line.StartsWith("GetActualY()")) return _robot.GetActualY();
+            if (line.StartsWith("GetCanvasSize()")) return _robot.GetCanvasSize();
+            if (line.StartsWith("IsBrushColor("))
+            {
+                var parts = line.TrimEnd(')').Split('(')[1].Split(',');
+                string colorName = parts[0].Trim('"', ' ', '\'');
+                return _robot.CurrentColor.Name.Equals(colorName, StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            }
 
-        public CommandParser(WallE robot)
+            throw new Exception($"Función no reconocida: {line}");
+        }
+
+
+        private Dictionary<string, int> _labels = new Dictionary<string, int>(); // Guarda línea de cada etiqueta
+
+        private void ParseLabel(string line)
+        {
+            string labelName = line.TrimEnd(':');
+            _labels[labelName] = currentLineNumber;
+        }
+
+        private void ParseGoTo(string line)
+        {
+            var parts = line.Split(new[] { '[', ']', '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length != 3)
+                throw new Exception("Formato: `GoTo [label] (condición)`");
+
+            string label = parts[1].Trim();
+            string condition = parts[2].Trim();
+
+            if (!_labels.ContainsKey(label))
+                throw new Exception($"Etiqueta no encontrada: '{label}'");
+
+            if (EvaluateCondition(condition))
+                currentLineNumber = _labels[label] - 1; // -1 porque el for loop incrementará
+        }
+
+        private bool EvaluateCondition(string condition)
+        {
+            var operators = new[] { "==", "!=", "<=", ">=", "<", ">" };
+            foreach (var op in operators)
+            {
+                if (condition.Contains(op))
+                {
+                    var parts = condition.Split(new[] { op }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length != 2)
+                        throw new Exception($"Condición mal formada: {condition}");
+
+                    int left = EvaluateExpression(parts[0].Trim());
+                    int right = EvaluateExpression(parts[1].Trim());
+
+                    switch (op)
+                    {
+                        case "==": return left == right;
+                        case "!=": return left != right;
+                        case "<": return left < right;
+                        case "<=": return left <= right;
+                        case ">": return left > right;
+                        case ">=": return left >= right;
+                    }
+                }
+            }
+            throw new Exception($"Operador no soportado en condición: {condition}");
+        }
+        private void ParseVariableAssignment(string line)
+        {
+            var parts = line.Split(new[] { "<-" }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length != 2)
+                throw new Exception("Sintaxis incorrecta para asignación. Uso: variable <- valor");
+
+            string varName = parts[0].Trim();
+            string expression = parts[1].Trim();
+
+            // Validar nombre de variable
+            if (!IsValidVariableName(varName))
+                throw new Exception($"Nombre de variable inválido: '{varName}'");
+
+            // Evaluar expresión (versión simplificada)
+            if (int.TryParse(expression, out int value))
+            {
+                variables.Assign(varName, value);
+            }
+            else
+            {
+                throw new Exception($"No se puede evaluar la expresión: {expression}");
+            }
+        }
+
+        private bool IsValidVariableName(string name)
+        {
+            // Implementar validación según especificaciones
+            // Debe contener solo letras, números y guiones, no empezar con número o guión
+            return !string.IsNullOrEmpty(name) &&
+                   !char.IsDigit(name[0]) &&
+                   name.All(c => char.IsLetterOrDigit(c) || c == '-');
+        }
+        private int EvaluateExpression(string expr)
+        {
+            // Caso simple: número directo
+            if (int.TryParse(expr, out int value))
+                return value;
+
+            // Caso variable existente
+            if (variables.Exists(expr))
+                return variables.GetValue(expr);
+
+            // Operaciones básicas
+            char[] ops = { '+', '-', '*', '/' };
+            foreach (char op in ops)
+            {
+                if (expr.Contains(op.ToString()))
+                {
+                    var parts = expr.Split(op);
+                    if (parts.Length != 2) continue;
+
+                    int left = EvaluateExpression(parts[0].Trim());
+                    int right = EvaluateExpression(parts[1].Trim());
+
+                    switch (op)
+                    {
+                        case '+': return left + right;
+                        case '-': return left - right;
+                        case '*': return left * right;
+                        case '/':
+                            if (right == 0) throw new Exception("División por cero");
+                            return left / right;
+                        default:
+                            throw new Exception($"Operador no soportado: {op}");
+                    }
+                }
+            }
+
+            throw new Exception($"Expresión no válida: '{expr}'");
+        }
+        public CommandParser(WallE robot, VariableManager _variables)
         {
             _robot = robot ?? throw new ArgumentNullException(nameof(robot));
+           // _variables = variables ?? throw new ArgumentNullException(nameof(_variables));
         }
 
         public void Execute(string code)
@@ -19,18 +160,18 @@ namespace PixelW
 
             string[] lines = code.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
-            for (int i = 0; i < lines.Length; i++)
+            for (currentLineNumber = 0; currentLineNumber < lines.Length; currentLineNumber++)
             {
                 try
                 {
-                    string line = lines[i].Trim();
+                    string line = lines[currentLineNumber].Trim();
                     if (string.IsNullOrWhiteSpace(line)) continue;
 
                     ProcessLine(line);
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"Error en línea {i + 1}: {ex.Message}");
+                    throw new Exception($"Error en línea {currentLineNumber + 1}: {ex.Message}");
                 }
             }
         }
@@ -69,6 +210,10 @@ namespace PixelW
             else if (line.StartsWith("DrawRectangle("))
             {
                 ParseDrawRectangleCommand(line);
+            }
+            else if(line.StartsWith("Fill(") || line.Trim() == "Fill")
+            {
+                _robot.Fill();
             }
             else
             {
@@ -153,28 +298,12 @@ namespace PixelW
 
             _robot.DrawLine(dirX, dirY, distance);
         }
-
-        private void ParseVariableAssignment(string line)
+        
+        private int GetValueFromExpression(string expr)
         {
-            // Implementación básica de asignación de variables
-            var parts = line.Split(new[] { "<-" }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length != 2)
-                throw new Exception("Sintaxis incorrecta para asignación. Uso: variable <- valor");
-
-            string varName = parts[0].Trim();
-            string expression = parts[1].Trim();
-
-            // Aquí iría la lógica para evaluar expresiones matemáticas
-            // Por ahora solo soportamos asignaciones directas de números
-            if (int.TryParse(expression, out int value))
-            {
-                // Guardar en un diccionario de variables (implementar esto)
-                throw new NotImplementedException("Asignación de variables no implementada completamente");
-            }
-            else
-            {
-                throw new Exception($"No se puede evaluar la expresión: {expression}");
-            }
+            if (int.TryParse(expr, out int value))
+                return value;
+            return variables.GetValue(expr);
         }
     }
 }

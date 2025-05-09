@@ -9,3 +9,14 @@ C:\Users\j7064\source\repos\PixelW\PixelW\bin\Debug\PixelW.pdb
 C:\Users\j7064\source\repos\PixelW\PixelW\obj\Debug\PixelW.exe
 C:\Users\j7064\source\repos\PixelW\PixelW\obj\Debug\PixelW.pdb
 C:\Users\j7064\source\repos\PixelW\PixelW\obj\Debug\PixelW.exe.config
+C:\Telegram\WallPix Rep\PixelW Copy\PixelW\bin\Debug\PixelW.exe.config
+C:\Telegram\WallPix Rep\PixelW Copy\PixelW\bin\Debug\PixelW.exe
+C:\Telegram\WallPix Rep\PixelW Copy\PixelW\bin\Debug\PixelW.pdb
+C:\Telegram\WallPix Rep\PixelW Copy\PixelW\obj\Debug\PixelW.csproj.AssemblyReference.cache
+C:\Telegram\WallPix Rep\PixelW Copy\PixelW\obj\Debug\PixelW.exe.config
+C:\Telegram\WallPix Rep\PixelW Copy\PixelW\obj\Debug\PixelW.Form1.resources
+C:\Telegram\WallPix Rep\PixelW Copy\PixelW\obj\Debug\PixelW.Properties.Resources.resources
+C:\Telegram\WallPix Rep\PixelW Copy\PixelW\obj\Debug\PixelW.csproj.GenerateResource.cache
+C:\Telegram\WallPix Rep\PixelW Copy\PixelW\obj\Debug\PixelW.csproj.CoreCompileInputs.cache
+C:\Telegram\WallPix Rep\PixelW Copy\PixelW\obj\Debug\PixelW.exe
+C:\Telegram\WallPix Rep\PixelW Copy\PixelW\obj\Debug\PixelW.pdb

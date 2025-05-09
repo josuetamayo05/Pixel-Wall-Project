@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 
 namespace PixelW
 {
@@ -34,6 +35,29 @@ namespace PixelW
                 for (int j = y - half; j <= y + half; j++)
                     if (IsWithinBounds(i, j)) pixels[i, j] = color;
         }
+        public void FloodFill(int x, int y, Color newColor)
+        {
+            Color targetColor = pixels[x, y];
+            if (targetColor == newColor) return;
+
+            Stack<(int, int)> pixelsToFill = new Stack<(int, int)>();
+            pixelsToFill.Push((x, y));
+
+            while (pixelsToFill.Count > 0)
+            {
+                var (currentX, currentY) = pixelsToFill.Pop();
+                if (!IsWithinBounds(currentX, currentY) || pixels[currentX, currentY] != targetColor)
+                    continue;
+
+                pixels[currentX, currentY] = newColor;
+
+                pixelsToFill.Push((currentX + 1, currentY));
+                pixelsToFill.Push((currentX - 1, currentY));
+                pixelsToFill.Push((currentX, currentY + 1));
+                pixelsToFill.Push((currentX, currentY - 1));
+            }
+        }
+
 
         public bool IsWithinBounds(int x, int y) => x >= 0 && x < Size && y >= 0 && y < Size;
 

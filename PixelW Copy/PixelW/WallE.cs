@@ -79,6 +79,7 @@ namespace PixelW
                     break;
                 default:
                     throw new Exception($"Color no soportado: {colorName}");
+                case ""
             }
         }
         public void DrawRectangle(int offsetX, int offsetY, int width, int height)

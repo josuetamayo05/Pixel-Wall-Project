@@ -3,12 +3,28 @@
   "WorkspaceRootPath": "C:\\Users\\j7064\\source\\repos\\PixelW\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Users\\j7064\\source\\repos\\PixelW\\pixelw\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|c:\\users\\j7064\\source\\repos\\pixelw\\pixelw\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|c:\\users\\j7064\\source\\repos\\pixelw\\pixelw\\commandparser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Users\\j7064\\source\\repos\\PixelW\\pixelw\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Users\\j7064\\source\\repos\\PixelW\\pixelw\\variablemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\variablemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Users\\j7064\\source\\repos\\PixelW\\pixelw\\commandparser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\commandparser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Users\\j7064\\source\\repos\\PixelW\\pixelw\\linenumberpanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\linenumberpanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Users\\j7064\\source\\repos\\PixelW\\pixelw\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Users\\j7064\\source\\repos\\PixelW\\pixelw\\canvas.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -17,10 +33,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Users\\j7064\\source\\repos\\PixelW\\pixelw\\walle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\walle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Users\\j7064\\source\\repos\\PixelW\\pixelw\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,43 +42,90 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 7,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 7,
               "Title": "WallE.cs",
               "DocumentMoniker": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\WallE.cs",
               "RelativeDocumentMoniker": "PixelW\\WallE.cs",
               "ToolTip": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\WallE.cs",
               "RelativeToolTip": "PixelW\\WallE.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAowDMAAAAaAAAAAAAAAA==",
+              "ViewState": "AgIAAFsAAAAAAAAAAAAcwKQAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-19T15:14:39.836Z",
-              "IsPinned": true
+              "WhenOpened": "2025-04-19T15:14:39.836Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Form1.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\Form1.Designer.cs",
+              "RelativeDocumentMoniker": "PixelW\\Form1.Designer.cs",
+              "ToolTip": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\Form1.Designer.cs",
+              "RelativeToolTip": "PixelW\\Form1.Designer.cs",
+              "ViewState": "AgIAAIcAAAAAAAAAAIAwwJkAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-08T01:46:33.686Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "LineNumberPanel.cs",
+              "DocumentMoniker": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\LineNumberPanel.cs",
+              "RelativeDocumentMoniker": "PixelW\\LineNumberPanel.cs",
+              "ToolTip": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\LineNumberPanel.cs",
+              "RelativeToolTip": "PixelW\\LineNumberPanel.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAsAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-08T00:27:37.072Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "Form1.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\Form1.cs",
+              "RelativeDocumentMoniker": "PixelW\\Form1.cs",
+              "ToolTip": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\Form1.cs [Design]",
+              "RelativeToolTip": "PixelW\\Form1.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-08T00:18:43.388Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "VariableManager.cs",
+              "DocumentMoniker": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\VariableManager.cs",
+              "RelativeDocumentMoniker": "PixelW\\VariableManager.cs",
+              "ToolTip": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\VariableManager.cs",
+              "RelativeToolTip": "PixelW\\VariableManager.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-26T16:43:49.559Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "CommandParser.cs",
               "DocumentMoniker": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\CommandParser.cs",
               "RelativeDocumentMoniker": "PixelW\\CommandParser.cs",
               "ToolTip": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\CommandParser.cs",
               "RelativeToolTip": "PixelW\\CommandParser.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAANAAAAAAAAAA==",
+              "ViewState": "AgIAAGEAAAAAAAAAAAAkwGkAAAA8AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-19T15:17:25.04Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-19T15:17:25.04Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 6,
               "Title": "Canvas.cs",
               "DocumentMoniker": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\Canvas.cs",
               "RelativeDocumentMoniker": "PixelW\\Canvas.cs",
               "ToolTip": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\Canvas.cs",
               "RelativeToolTip": "PixelW\\Canvas.cs",
-              "ViewState": "AgIAACUAAAAAAAAAAAAkwC4AAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAADcAAAAAAAAAAAAowCoAAABCAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-19T15:12:53.195Z"
             },
@@ -78,22 +137,20 @@
               "RelativeDocumentMoniker": "PixelW\\Form1.cs",
               "ToolTip": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\Form1.cs",
               "RelativeToolTip": "PixelW\\Form1.cs",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAAABIAAAAqAAAAAAAAAA==",
+              "ViewState": "AgIAAOQAAAAAAAAAAAAiwOoAAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-19T14:51:08.863Z",
               "EditorCaption": ""
-            },
+            }
+          ]
+        },
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": -1,
+          "Children": [
             {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Form1.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\Form1.cs",
-              "RelativeDocumentMoniker": "PixelW\\Form1.cs",
-              "ToolTip": "C:\\Users\\j7064\\source\\repos\\PixelW\\PixelW\\Form1.cs [Design]",
-              "RelativeToolTip": "PixelW\\Form1.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-19T14:50:14.893Z",
-              "EditorCaption": " [Design]"
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
             }
           ]
         }

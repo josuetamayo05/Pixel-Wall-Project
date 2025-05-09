@@ -67,14 +67,34 @@ namespace PixelW
         {
             try
             {
-                canvas.Clear();
-                parser.Execute(txtEditor.Text);
-                UpdateCanvas();
+                int newSize = (int)numCanvasSize.Value;
+                if (newSize < 10 || newSize > 500)
+                {
+                    MessageBox.Show("El tamaño debe estar entre 10 y 500");
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                if (picCanvas.Image != null) {
+                    picCanvas.Image.Dispose();
+                }
+                canvas = new Canvas(newSize);
+                robot = new WallE(canvas);
+
+                picCanvas.Image = canvas.ToBitmap();
+                MessageBox.Show($"Canvas redimensionado a {newSize}x{newSize}", "Éxito",
+                      MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            catch (Exception ex)
+            catch (Exception ex) {
+                MessageBox.Show($"Error al redimensionar: {ex.Message}", "Error",
+                      MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private BtnSave_Click(object sender, EventArgs e)
+        {
+            try
             {
-                MessageBox.Show($"Error: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+
             }
         }
 

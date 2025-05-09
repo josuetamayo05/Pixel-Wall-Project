@@ -11,6 +11,9 @@ namespace PixelW
         public int BrushSize { get; private set; } = 1;
 
         private readonly Canvas canvas;
+        public int GetActualX() => X;
+        public int GetActualY() => Y;
+        public int GetCanvasSize() => canvas.Size;
 
         public WallE(Canvas canvas)
         {
@@ -173,6 +176,14 @@ namespace PixelW
             canvas.DrawPixel(cx - y, cy + x, CurrentColor, BrushSize);
             canvas.DrawPixel(cx + y, cy - x, CurrentColor, BrushSize);
             canvas.DrawPixel(cx - y, cy - x, CurrentColor, BrushSize);
+        }
+
+        public void Fill()
+        {
+            if (CurrentColor == Color.Transparent)
+                throw new Exception("No se puede rellenar con color transparente");
+
+            canvas.FloodFill(X, Y, CurrentColor);
         }
     }
 }
