@@ -20,7 +20,7 @@ namespace PixelW
             this.canvas = canvas;
         }
 
-        public void Spawn(int x, int y)
+        public void Spawn(int x, int y)//coloca al wall en la posicion x,y del canvas
         {
             if (x < 0 || x >= canvas.Size || y < 0 || y >= canvas.Size)
                 throw new ArgumentException("Posición fuera de los límites");
@@ -120,7 +120,7 @@ namespace PixelW
 
         public void DrawLine(int dirX, int dirY,int distance)
         {
-            for(int i = 0;i<distance;i++)
+            for(int i = 0;i<distance;i++) //recibe una direccion y dibuja a una distance el pixel
             {
                 X+= dirX;
                 Y+= dirY;
@@ -156,29 +156,29 @@ namespace PixelW
             {
                 DrawCirclePoints(centerX, centerY, x, y);
 
-                y += 1;
+                y++;
                 err += 1 + 2 * y;
-                if (2 * (err - x) + 1 > 0)
+                if (2 * (err - x) + 1 > 0) //Decide si debemos mover x hacia adentro para mantener la forma circular
                 {
-                    x -= 1;
+                    x--;
                     err += 1 - 2 * x;
                 }
             }
         }
 
         private void DrawCirclePoints(int cx, int cy, int x, int y)
-        {
-            canvas.DrawPixel(cx + x, cy + y, CurrentColor, BrushSize);
-            canvas.DrawPixel(cx - x, cy + y, CurrentColor, BrushSize);
-            canvas.DrawPixel(cx + x, cy - y, CurrentColor, BrushSize);
-            canvas.DrawPixel(cx - x, cy - y, CurrentColor, BrushSize);
-            canvas.DrawPixel(cx + y, cy + x, CurrentColor, BrushSize);
-            canvas.DrawPixel(cx - y, cy + x, CurrentColor, BrushSize);
-            canvas.DrawPixel(cx + y, cy - x, CurrentColor, BrushSize);
-            canvas.DrawPixel(cx - y, cy - x, CurrentColor, BrushSize);
+        {//dibujo los 8 simetricos al centro cx,cy lo divido en 8 octantes
+            canvas.DrawPixel(cx + x, cy + y, CurrentColor, BrushSize); //arriba derecha
+            canvas.DrawPixel(cx - x, cy + y, CurrentColor, BrushSize);//abajo derecha
+            canvas.DrawPixel(cx + x, cy - y, CurrentColor, BrushSize);//arriba izq
+            canvas.DrawPixel(cx - x, cy - y, CurrentColor, BrushSize);//abajo izq
+            canvas.DrawPixel(cx + y, cy + x, CurrentColor, BrushSize);//derech arriba
+            canvas.DrawPixel(cx - y, cy + x, CurrentColor, BrushSize);//derec abaj
+            canvas.DrawPixel(cx + y, cy - x, CurrentColor, BrushSize);//izq arr
+            canvas.DrawPixel(cx - y, cy - x, CurrentColor, BrushSize);//izq abaj
         }
 
-        public void Fill()
+        public void Fill() //rell espac conexos
         {
             if (CurrentColor == Color.Transparent)
                 throw new Exception("No se puede rellenar con color transparente");

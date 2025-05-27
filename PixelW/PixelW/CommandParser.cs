@@ -153,7 +153,7 @@ namespace PixelW
            // _variables = variables ?? throw new ArgumentNullException(nameof(_variables));
         }
 
-        public void Execute(string code)
+        public void Execute(string code)//analiza y ejecuta cada linea
         {
             if (string.IsNullOrWhiteSpace(code))
                 throw new Exception("El código no puede estar vacío");
