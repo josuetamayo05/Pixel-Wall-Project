@@ -118,14 +118,17 @@ namespace PixelW
             }
         }
 
-        public void DrawLine(int dirX, int dirY,int distance)
+        public void DrawLine(int dirX, int dirY, int distance)
         {
-            for(int i = 0;i<distance;i++) //recibe una direccion y dibuja a una distance el pixel
+            for (int i = 0; i < distance; i++)
             {
-                X+= dirX;
-                Y+= dirY;
-                if(CurrentColor!=Color.Transparent)
-                       canvas.DrawPixel(X, Y,CurrentColor,BrushSize);
+                X += dirX;
+                Y += dirY;
+                if (CurrentColor != Color.Transparent)
+                {
+                    // Dibuja en la posición actual (X,Y) de la cuadrícula
+                    canvas.DrawPixel(X, Y, CurrentColor);
+                }
             }
         }
         public void SetBrushSize(int size)
@@ -166,6 +169,52 @@ namespace PixelW
             }
         }
 
+        public int GetColorCount(string colorName, int x1, int y1, int x2, int y2)
+        {
+            // Validar coordenadas primero
+            if (!canvas.IsWithinBounds(x1, y1) || !canvas.IsWithinBounds(x2, y2))
+                return 0;
+
+            // Normalizar coordenadas (x1,y1 será esquina superior izquierda)
+            int startX = Math.Min(x1, x2);
+            int endX = Math.Max(x1, x2);
+            int startY = Math.Min(y1, y2);
+            int endY = Math.Max(y1, y2);
+
+            Color targetColor;
+            if (colorName.Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+            {
+                targetColor = Color.Transparent;
+            }
+            else
+            {
+                targetColor = Color.FromName(colorName);
+                if (targetColor.ToArgb() == 0) // Color.FromName devuelve ARGB=0 para nombres inválidos
+                    throw new Exception($"Color no válido: {colorName}");
+            }
+
+            int count = 0;
+            for (int x = startX; x <= endX; x++)
+            {
+                for (int y = startY; y <= endY; y++)
+                {
+                    if (canvas.IsWithinBounds(x, y)) // Doble verificación por seguridad
+            {
+                        if (targetColor == Color.Transparent)
+                        {
+                            if (canvas.GetPixel(x, y) == Color.Transparent)
+                                count++;
+                        }
+                        else if (canvas.GetPixel(x, y).ToArgb() == targetColor.ToArgb())
+                        {
+                            count++;
+                        }
+                    }
+                }
+            }
+            return count;
+        }
+
         private void DrawCirclePoints(int cx, int cy, int x, int y)
         {//dibujo los 8 simetricos al centro cx,cy lo divido en 8 octantes
             canvas.DrawPixel(cx + x, cy + y, CurrentColor, BrushSize); //arriba derecha
@@ -176,6 +225,11 @@ namespace PixelW
             canvas.DrawPixel(cx - y, cy + x, CurrentColor, BrushSize);//derec abaj
             canvas.DrawPixel(cx + y, cy - x, CurrentColor, BrushSize);//izq arr
             canvas.DrawPixel(cx - y, cy - x, CurrentColor, BrushSize);//izq abaj
+        }
+
+        public int IsBrushColor(string colorName)
+        {
+            return CurrentColor.Name.Equals(colorName, StringComparison.OrdinalIgnoreCase)? 1: 0;
         }
 
         public void Fill() //rell espac conexos

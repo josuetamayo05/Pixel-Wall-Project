@@ -18,11 +18,29 @@ namespace PixelW
         private Canvas canvas;
         private WallE robot;
         private CommandParser parser;
-        private const int DefaultSize = 200;
+        private const int InitialCanvasSize = 200; // Renombramos la constante
+        private StatusStrip statusStrip;
+        private ToolStripStatusLabel statusLabel;
 
         public Form1()
         {
+            variableManager = new VariableManager();
+            canvas = new Canvas(InitialCanvasSize);
+            robot = new WallE(canvas);
+            parser = new CommandParser(robot, variableManager);
+
             InitializeComponent();
+            statusStrip = new StatusStrip();
+            statusLabel = new ToolStripStatusLabel();
+            statusStrip.Items.Add(statusLabel);
+            this.Controls.Add(statusStrip);
+
+            // Habilita eventos de teclado y mouse
+            this.KeyPreview = true;
+            picCanvas.MouseMove += PicCanvas_MouseMove;
+            picCanvas.MouseWheel += PicCanvas_MouseWheel;
+
+
             if (panelLineNumbers != null && txtEditor != null)
             {
                 panelLineNumbers.AttachToEditor(txtEditor);
@@ -31,8 +49,9 @@ namespace PixelW
             SetupAutoComplete();
             // Resto de la inicialización
             variableManager = new VariableManager();
-            InitializeCanvas(DefaultSize);
-            numCanvasSize.Value = DefaultSize;
+            InitializeCanvas(InitialCanvasSize);
+            picCanvas.SizeMode = PictureBoxSizeMode.Zoom;
+            numCanvasSize.Value = InitialCanvasSize;
 
 
         }
@@ -78,30 +97,91 @@ namespace PixelW
         }
         private void SetupAutoComplete()
         {
-            // RichTextBox no soporta autocompletado nativo, usaremos un TextBox alternativo
-            // o implementaremos una solución manual
-
-            // Opción 1: Cambiar a TextBox (si es posible)
-            // txtEditor.AutoCompleteCustomSource = new AutoCompleteStringCollection();
-            // txtEditor.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
-            // txtEditor.AutoCompleteSource = AutoCompleteSource.CustomSource;
-
-            // Opción 2: Implementación manual para RichTextBox
-            var commands = new List<string>
-    {
-        "Spawn(", "Color(", "DrawLine(", "DrawCircle(", "DrawRectangle(",
-        "Fill()", "Size(", "GetActualX()", "GetActualY()", "GetCanvasSize()",
-        "IsBrushColor(", "IsBrushSize(", "IsCanvasColor(", "GetColorCount(",
-        "GoTo ["
-    };
-
             txtEditor.KeyDown += (sender, e) =>
             {
                 if (e.KeyCode == Keys.Space && Control.ModifierKeys == Keys.Control)
                 {
-                    ShowCustomCompletionMenu(commands);
+                    ShowCustomCompletionMenu(GetAutoCompleteItems());
                 }
             };
+
+            // También puedes agregar el trigger para paréntesis
+            txtEditor.KeyPress += (sender, e) =>
+            {
+                if (e.KeyChar == '(')
+                {
+                    ShowCustomCompletionMenu(GetAutoCompleteItems());
+                    e.Handled = true;
+                }
+            };
+        }
+
+        private void UpdateStatus()
+        {
+            statusLabel.Text = $"Wall-E: [{robot.GetActualX()}, {robot.GetActualY()}] | Zoom: {canvas.ZoomLevel}x";
+        }
+
+        private void PicCanvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (canvas != null)
+            {
+                int pixelX = e.X / canvas.ZoomLevel;
+                int pixelY = e.Y / canvas.ZoomLevel;
+                statusLabel.Text = $"Mouse: [{pixelX}, {pixelY}] | Wall-E: [{robot.GetActualX()}, {robot.GetActualY()}]";
+            }
+        }
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            switch (keyData)
+            {
+                case Keys.Control | Keys.S:
+                    btnSave.PerformClick();
+                    return true;
+
+                case Keys.Control | Keys.O:
+                    btn_Load.PerformClick();
+                    return true;
+
+                case Keys.F5:
+                    btnRun.PerformClick();
+                    return true;
+
+                case Keys.Control | Keys.Add:
+                    canvas.ZoomLevel++;
+                    UpdateCanvas();
+                    return true;
+
+                case Keys.Control | Keys.Subtract:
+                    canvas.ZoomLevel--;
+                    UpdateCanvas();
+                    return true;
+
+                case Keys.Control | Keys.D0:
+                    canvas.ZoomLevel = 1;
+                    UpdateCanvas();
+                    return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void PicCanvas_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (Control.ModifierKeys == Keys.Control)
+            {
+                canvas.ZoomLevel += e.Delta > 0 ? 1 : -1;
+                UpdateCanvas();
+                UpdateStatus();
+            }
+        }
+        private List<string> GetAutoCompleteItems()
+        {
+            return new List<string>
+    {
+        "Spawn(", "Color(", "DrawLine(", "DrawCircle(", "DrawRectangle(",
+        "Fill()", "Size(", "GetActualX()", "GetActualY()", "GetCanvasSize()",
+        "GetColorCount(", "IsBrushColor(", "IsBrushSize(", "IsCanvasColor(",
+        "GoTo ["
+    };
         }
 
         private void ShowCustomCompletionMenu(List<string> commands)
@@ -130,8 +210,8 @@ namespace PixelW
 
             // Inicializar componentes de la aplicación
             variableManager = new VariableManager();
-            InitializeCanvas(DefaultSize);
-            numCanvasSize.Value = DefaultSize;
+            InitializeCanvas(InitialCanvasSize);
+            numCanvasSize.Value = InitialCanvasSize;
 
             // Configurar eventos
             btnRun.Click += BtnRun_Click;
@@ -146,14 +226,6 @@ namespace PixelW
             parser = new CommandParser(robot, variableManager);
             UpdateCanvas();
         }
-
-        private void UpdateCanvas()
-        {
-            var oldImage = picCanvas.Image;
-            picCanvas.Image = canvas.ToBitmap();
-            oldImage?.Dispose();
-        }
-
         private void ShowCompletionMenuForPrefix(string prefix)
         {
             var menu = new ContextMenuStrip();
@@ -293,6 +365,9 @@ namespace PixelW
 
                 // Actualizar la visualización
                 picCanvas.Image = canvas.ToBitmap();
+                picCanvas.Refresh();
+
+                this.InvalidateLayout();
 
                 MessageBox.Show($"Canvas redimensionado a {newSize}x{newSize}", "Éxito",
                               MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -302,6 +377,19 @@ namespace PixelW
                 MessageBox.Show($"Error al redimensionar: {ex.Message}", "Error",
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        private void InvalidateLayout()
+        {
+            // Ajusta otros controles si es necesario
+            panelLineNumbers.Invalidate();
+            txtEditor.Invalidate();
+        }
+        private void UpdateCanvas()
+        {
+            var oldImage = picCanvas.Image;
+            picCanvas.Image = canvas.ToBitmap();
+            picCanvas.Size = new Size(canvas.Size, canvas.Size);
+            oldImage?.Dispose();
         }
     }
 }

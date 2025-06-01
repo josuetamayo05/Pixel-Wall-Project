@@ -1,12 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace PixelW
 {
     internal class Canvas
     {
         public int Size { get; }
-        private Color[,] pixels; //matriz de colores
+        private Color[,] pixels;
+        private int _zoomLevel = 1; // 1 = 100%, 2 = 200%, etc.
+        private const int MaxZoom = 5;
+        private const int MinZoom = 1;
+
+
+        public int ZoomLevel
+        {
+            get => _zoomLevel;
+            set => _zoomLevel = (value < MinZoom) ? MinZoom : (value > MaxZoom) ? MaxZoom : value;
+        }
 
         public Canvas(int size)
         {
@@ -20,6 +32,13 @@ namespace PixelW
             for (int x = 0; x < Size; x++)
                 for (int y = 0; y < Size; y++)
                     pixels[x, y] = Color.White;
+        }
+
+        public Color GetPixel(int x, int y)
+        {
+            if (!IsWithinBounds(x, y))
+                throw new IndexOutOfRangeException("Coordenadas fuera del canvas");
+            return pixels[x, y];
         }
 
         public void DrawPixel(int x, int y, Color color, int brushSize = 1)
@@ -63,11 +82,25 @@ namespace PixelW
         public bool IsWithinBounds(int x, int y) => x >= 0 && x < Size && y >= 0 && y < Size;
 
         public Bitmap ToBitmap()
-        {//Form1 llama a este método para actualizar picCanvas.Image después de cada dibujo
-            Bitmap bmp = new Bitmap(Size, Size); //crear btmp vacio de tama;o del canvas
-            for (int x = 0; x < Size; x++)
-                for (int y = 0; y < Size; y++)
-                    bmp.SetPixel(x, y, pixels[x, y]); //copiar cada pixel de la matriz al bitmap
+        {
+            Bitmap bmp = new Bitmap(Size * ZoomLevel, Size * ZoomLevel);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(Color.White);
+
+                for (int x = 0; x < Size; x++)
+                {
+                    for (int y = 0; y < Size; y++)
+                    {
+                        if (pixels[x, y] != Color.White && pixels[x, y] != Color.Transparent)
+                        {
+                            g.FillRectangle(new SolidBrush(pixels[x, y]),
+                                           x * ZoomLevel, y * ZoomLevel,
+                                           ZoomLevel, ZoomLevel);
+                        }
+                    }
+                }
+            }
             return bmp;
         }
     }

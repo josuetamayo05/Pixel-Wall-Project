@@ -5,7 +5,7 @@ namespace PixelW
 {
     internal class VariableManager
     {
-        private Dictionary<string, int> variables = new Dictionary<string, int>();
+        public Dictionary<string, int> variables = new Dictionary<string, int>();
         public void Assign(string varName, int value)
         {
             variables[varName] = value;

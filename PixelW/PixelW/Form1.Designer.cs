@@ -52,7 +52,7 @@
             this.numCanvasSize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.numCanvasSize.Location = new System.Drawing.Point(860, 12);
             this.numCanvasSize.Maximum = new decimal(new int[] {
-            300,
+            500,
             0,
             0,
             0});
@@ -72,6 +72,8 @@
             this.picCanvas.Size = new System.Drawing.Size(500, 500);
             this.picCanvas.TabIndex = 2;
             this.picCanvas.TabStop = false;
+            this.picCanvas.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PicCanvas_MouseMove);
+            this.picCanvas.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.PicCanvas_MouseWheel);
             // 
             // btnResize
             // 

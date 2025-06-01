@@ -7,9 +7,16 @@ namespace PixelW
 {
     internal class CommandParser
     {
+       
+
         private readonly WallE _robot;
-        private readonly VariableManager variables;
+        private readonly VariableManager _variables;
         private int currentLineNumber;
+        public CommandParser(WallE robot, VariableManager variables)
+        {
+            _robot = robot ?? throw new ArgumentNullException(nameof(robot));
+            _variables = variables ?? throw new ArgumentNullException(nameof(variables));
+        }
         private int ParseFunctionCall(string line)
         {
             if (line.StartsWith("GetActualX()")) return _robot.GetActualX();
@@ -26,28 +33,41 @@ namespace PixelW
         }
 
 
-        private Dictionary<string, int> _labels = new Dictionary<string, int>(); // Guarda línea de cada etiqueta
+        public Dictionary<string, int> _labels = new Dictionary<string, int>(); // Guarda línea de cada etiqueta
 
         private void ParseLabel(string line)
         {
-            string labelName = line.TrimEnd(':');
+            string labelName = line.TrimEnd(':').Trim();
+            if (string.IsNullOrWhiteSpace(labelName))
+                throw new Exception("El nombre de etiqueta no puede estar vacío");
+
             _labels[labelName] = currentLineNumber;
         }
 
         private void ParseGoTo(string line)
         {
-            var parts = line.Split(new[] { '[', ']', '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length != 3)
-                throw new Exception("Formato: `GoTo [label] (condición)`");
+            // Elimina espacios innecesarios y verifica formato básico
+            line = line.Trim();
+            if (!line.StartsWith("GoTo", StringComparison.OrdinalIgnoreCase))
+                throw new Exception("Formato incorrecto: debe comenzar con 'GoTo'");
 
-            string label = parts[1].Trim();
-            string condition = parts[2].Trim();
+            // Usa expresiones regulares para mayor flexibilidad
+            var match = System.Text.RegularExpressions.Regex.Match(
+                line,
+                @"GoTo\s*\[([^\]]+)\]\s*\(([^)]+)\)",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            if (!match.Success)
+                throw new Exception("Formato incorrecto. Uso: GoTo [etiqueta] (condición)");
+
+            string label = match.Groups[1].Value.Trim();
+            string condition = match.Groups[2].Value.Trim();
 
             if (!_labels.ContainsKey(label))
                 throw new Exception($"Etiqueta no encontrada: '{label}'");
 
             if (EvaluateCondition(condition))
-                currentLineNumber = _labels[label] - 1; // -1 porque el for loop incrementará
+                currentLineNumber = _labels[label];
         }
 
         private bool EvaluateCondition(string condition)
@@ -91,14 +111,8 @@ namespace PixelW
                 throw new Exception($"Nombre de variable inválido: '{varName}'");
 
             // Evaluar expresión (versión simplificada)
-            if (int.TryParse(expression, out int value))
-            {
-                variables.Assign(varName, value);
-            }
-            else
-            {
-                throw new Exception($"No se puede evaluar la expresión: {expression}");
-            }
+            int value = EvaluateExpression(expression);
+            _variables.Assign(varName, value);
         }
 
         private bool IsValidVariableName(string name)
@@ -107,17 +121,20 @@ namespace PixelW
             // Debe contener solo letras, números y guiones, no empezar con número o guión
             return !string.IsNullOrEmpty(name) &&
                    !char.IsDigit(name[0]) &&
-                   name.All(c => char.IsLetterOrDigit(c) || c == '-');
+                   name.All(c => char.IsLetterOrDigit(c) || c == '-' || c=='_');
         }
         private int EvaluateExpression(string expr)
         {
+            //caso funcion nuevo
+            if(expr.Contains("(") && expr.EndsWith(")"))
+                return ParseFunctionCall(expr);         
             // Caso simple: número directo
             if (int.TryParse(expr, out int value))
                 return value;
 
             // Caso variable existente
-            if (variables.Exists(expr))
-                return variables.GetValue(expr);
+            if (_variables.Exists(expr))
+                return _variables.GetValue(expr);
 
             // Operaciones básicas
             char[] ops = { '+', '-', '*', '/' };
@@ -147,11 +164,7 @@ namespace PixelW
 
             throw new Exception($"Expresión no válida: '{expr}'");
         }
-        public CommandParser(WallE robot, VariableManager _variables)
-        {
-            _robot = robot ?? throw new ArgumentNullException(nameof(robot));
-           // _variables = variables ?? throw new ArgumentNullException(nameof(_variables));
-        }
+        
 
         public void Execute(string code)//analiza y ejecuta cada linea
         {
@@ -175,9 +188,28 @@ namespace PixelW
                 }
             }
         }
+        private int ParseGetColorCount(string line)
+        {
+            var parts = line.TrimEnd(')').Split('(')[1].Split(',');
+            if (parts.Length != 5)
+                throw new Exception("Sintaxis incorrecta para GetColorCount. Uso: GetColorCount(\"color\", x1, y1, x2, y2)");
+
+            string colorName = parts[0].Trim('"', ' ', '\'');
+            int x1 = int.Parse(parts[1].Trim());
+            int y1 = int.Parse(parts[2].Trim());
+            int x2 = int.Parse(parts[3].Trim());
+            int y2 = int.Parse(parts[4].Trim());
+
+            return _robot.GetColorCount(colorName, x1, y1, x2, y2);
+        }
 
         private void ProcessLine(string line)
         {
+            if(line.EndsWith(":"))
+            {
+                ParseLabel(line);
+                return;
+            }
             if (line.StartsWith("Spawn("))
             {
                 ParseSpawnCommand(line);
@@ -185,6 +217,14 @@ namespace PixelW
             else if (line.StartsWith("Color("))
             {
                 ParseColorCommand(line);
+            }
+            else if (line.TrimStart().StartsWith("GoTo", StringComparison.OrdinalIgnoreCase))
+            {
+                ParseGoTo(line);
+            }
+            else if (line.EndsWith(":"))
+            {
+                ParseLabel(line);
             }
             else if (line.StartsWith("DrawLine("))
             {
@@ -194,6 +234,10 @@ namespace PixelW
             {
                 // Comentario, ignorar
                 return;
+            }
+            else if (line.StartsWith("GetColorCount("))
+            {
+                ParseGetColorCount(line);
             }
             else if (line.Contains("<-"))
             {
@@ -214,6 +258,10 @@ namespace PixelW
             else if(line.StartsWith("Fill(") || line.Trim() == "Fill")
             {
                 _robot.Fill();
+            }
+            else if (line.StartsWith("Spawn("))
+            {
+                ParseSpawnCommand(line);
             }
             else
             {
@@ -303,7 +351,7 @@ namespace PixelW
         {
             if (int.TryParse(expr, out int value))
                 return value;
-            return variables.GetValue(expr);
+            return _variables.GetValue(expr);
         }
     }
 }
