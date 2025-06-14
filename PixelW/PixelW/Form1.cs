@@ -280,29 +280,54 @@ namespace PixelW
         }
         private void BtnRun_Click(object sender, EventArgs e)
         {
-            // Reiniciar el parser con cada ejecución
+            // Limpiar errores previos pero mantener el canvas
             variableManager = new VariableManager();
             parser = new CommandParser(robot, variableManager);
 
             var result = parser.Execute(txtEditor.Text);
 
+            // Siempre actualizar el canvas, independientemente de los errores
+            UpdateCanvas();
+
             if (!result.Success)
             {
-                MessageBox.Show($"Error en línea {result.ErrorLine}: {result.ErrorMessage}",
-                              "Error de ejecución",
-                              MessageBoxButtons.OK,
-                              MessageBoxIcon.Error);
-
-                HighlightErrorLine(result.ErrorLine);
+                ShowErrors(result.Errors);
+                // Opcional: Restaurar posición/color original del robot
+                // pero mantener los cambios en el canvas
             }
+        }
 
-            UpdateCanvas(); // Actualizar siempre, incluso con errores
+        private void ShowErrors(List<CommandParser.ErrorInfo> errors)
+        {
+            if (errors.Count == 0) return;
+            txtEditor.SelectAll();
+            txtEditor.SelectionBackColor = Color.White;
+            var errorMessage = new StringBuilder(); 
+            foreach(var error in errors)
+            {
+                HighlightErrorLine(error.LineNumber);
+                errorMessage.AppendLine($"Línea {error.LineNumber}: {error.Message}");
+                errorMessage.AppendLine($"Código: {error.CodeSnippet}");
+                errorMessage.AppendLine();
+            }
+            MessageBox.Show(errorMessage.ToString(), "Errores", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            // Enfocar en el primer error
+            if (errors.Count > 0)
+            {
+                txtEditor.SelectionStart = txtEditor.GetFirstCharIndexFromLine(errors[0].LineNumber - 1);
+                txtEditor.ScrollToCaret();
+            }
         }
 
         private void HighlightErrorLine(int lineNumber)
         {
-            txtEditor.SelectionStart = txtEditor.GetFirstCharIndexFromLine(lineNumber - 1);
-            txtEditor.SelectionLength = txtEditor.Lines[lineNumber - 1].Length;
+            if (lineNumber <= 0 || lineNumber > txtEditor.Lines.Length) return;
+
+            int start = txtEditor.GetFirstCharIndexFromLine(lineNumber - 1);
+            int length = txtEditor.Lines[lineNumber - 1].Length;
+
+            txtEditor.Select(start, length);
             txtEditor.SelectionBackColor = Color.LightPink;
         }
         private void BtnResize_Click(object sender, EventArgs e)

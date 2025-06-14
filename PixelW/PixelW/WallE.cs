@@ -20,6 +20,22 @@ namespace PixelW
             this.canvas = canvas;
         }
 
+        public Canvas Clone()
+        {
+            var newCanvas = new Canvas(canvas.Size);
+            newCanvas.ZoomLevel = canvas._zoomLevel;
+
+            // Copiar todos los píxeles
+            for (int x = 0; x < canvas.Size; x++)
+            {
+                for (int y = 0; y < canvas.Size; y++)
+                {
+                    newCanvas.pixels[x, y] = canvas.pixels[x, y];
+                }
+            }
+
+            return newCanvas;
+        }
         public void Spawn(int x, int y)//coloca al wall en la posicion x,y del canvas
         {
             if (x < 0 || x >= canvas.Size || y < 0 || y >= canvas.Size)
@@ -135,10 +151,15 @@ namespace PixelW
             {
                 X += dirX;
                 Y += dirY;
-                if (CurrentColor != Color.Transparent)
+
+                // Verificar límites antes de dibujar
+                if (canvas.IsWithinBounds(X, Y) && CurrentColor != Color.Transparent)
                 {
-                    // Dibuja en la posición actual (X,Y) de la cuadrícula
-                    canvas.DrawPixel(X, Y, CurrentColor);
+                    canvas.DrawPixel(X, Y, CurrentColor, BrushSize);
+                }
+                else if (!canvas.IsWithinBounds(X, Y))
+                {
+                    throw new Exception($"Posición ({X}, {Y}) fuera de los límites del canvas");
                 }
             }
         }
