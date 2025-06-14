@@ -30,7 +30,7 @@ Un lenguaje de programación visual para crear *pixel art* mediante comandos que
 
 ## 🔍 Reglas Esenciales (Del PDF)
 
-```python
+
 # ✅ CORRECTO
 Spawn(10, 10)  # Siempre PRIMERA línea
 Color("Red")
@@ -48,22 +48,19 @@ Solo se permite una vez por programa
 
 Ejemplo válido:
 
-python
 Spawn(5, 5)  # Posición inicial (x,y)
 2. Color(colorName) - Paleta Limitada
 Colores permitidos (exactos):
 
-python
 "Red"    │ "Green"   │ "Blue"
 "Yellow" │ "Orange"  │ "Purple"
 "Black"  │ "White"   │ "Transparent"
 Ejemplo:
 
-python
 Color("Purple")  # Cambia a púrpura
 Color("White")   # Actúa como "borrador"
 3. Size(k) - Sólo Impares
-python
+
 Size(3)   # ✅ Válido (3 píxeles)
 Size(4)   # ❌ Convertido a 3 automáticamente
 ✏️ Comandos de Dibujo (Validación Estricta)
@@ -76,7 +73,6 @@ text
 (-1, 1)  (0, 1)  (1, 1)
 Ejemplo válido:
 
-python
 DrawLine(1, 0, 10)  # Horizontal derecha (10px)
 DrawCircle(dirX, dirY, radio)
 python
@@ -90,12 +86,11 @@ DrawRectangle(0, 1, 5, 8, 4)
 Variables
 Nombres válidos: a-Z, 0-9, _ (no empezar con número)
 
-python
 ancho <- 20
 nombre_valido <- ancho / 2
 1nombre <- 5  # ❌ Error sintáctico
 GoTo [label] (condición)
-python
+
 inicio:
   DrawLine(1, 0, 1)
   contador <- contador + 1
@@ -105,16 +100,14 @@ inicio:
 🚫 Errores Comunes (Evítalos!)
 Spawn múltiple:
 
-python
 Spawn(0,0)
 Spawn(5,5)  # ❌ Error crítico
 Colores no definidos:
 
-python
 Color("Azul")  # ❌ Debe ser "Blue"
 Direcciones inválidas:
 
-python
+
 DrawLine(2, -3, 5)  # ❌ Solo -1, 0, 1
 📜 Ejemplo Completo (100% Válido)
 python
