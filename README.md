@@ -22,89 +22,125 @@ Un lenguaje de programación visual para crear pixel art mediante comandos simpl
 2. Abre la solución en Visual Studio
 3. Compila y Ejecuta el Proyecto
 
-## 🎮 Domina el Lenguaje Pixel Wall-E
+# Pixel Wall-E 🎨🤖
 
-### 📜 Estructura Básica
-Cada creación comienza colocando a Wall-E en el canvas:
+![Interfaz de Pixel Wall-E](screenshot.png)
+
+Un lenguaje de programación visual para crear *pixel art* mediante comandos que controlan al robot Wall-E en un canvas, siguiendo estrictas reglas sintácticas.
+
+## 🔍 Reglas Esenciales (Del PDF)
 
 ```python
-# Configuración inicial
-Spawn(10, 10)   # 🏁 Punto de partida en (X,Y)
-Color("Navy")   # 🎨 Elige tu color
-Size(3)         # 🔍 Grosor del pincel (solo impares)
+# ✅ CORRECTO
+Spawn(10, 10)  # Siempre PRIMERA línea
+Color("Red")
+DrawLine(1, 0, 5)
 
-🛠 Toolbox de Comandos
-🖌 Comandos Esenciales
-Comando	Ejemplo	Efecto Visual
-Spawn(x,y)	Spawn(0,0)	🚀 Teletransporta a Wall-E
-Color("Nombre")	Color("Coral")	🌈 Cambia el color actual
-Size(k)	Size(5)	⚖️ Ajusta el grosor (1,3,5,...)
-✨ Comandos de Dibujo
+# ❌ INCORRECTO
+Color("Blue")  # Error: Spawn debe ir primero
+Spawn(0,0)    # Error: Spawn repetido
+
+🛠 Comandos Básicos (Reglas Estrictas)
+1. Spawn(x, y) - Obligatorio y Único
+Siempre debe ser el primer comando
+
+Solo se permite una vez por programa
+
+Ejemplo válido:
+
 python
-DrawLine(1, 0, 10)       # ➡️ Línea horizontal
-DrawCircle(0, 1, 8)      # ⭕ Círculo de radio 8
-DrawRectangle(1,1,5,4,2) # ▭ Rectángulo 4x2
-Fill()                   # 🌊 Relleno mágico
-🧠 Lógica Avanzada
-🔢 Variables y Operaciones
+Spawn(5, 5)  # Posición inicial (x,y)
+2. Color(colorName) - Paleta Limitada
+Colores permitidos (exactos):
+
+python
+"Red"    │ "Green"   │ "Blue"
+"Yellow" │ "Orange"  │ "Purple"
+"Black"  │ "White"   │ "Transparent"
+Ejemplo:
+
+python
+Color("Purple")  # Cambia a púrpura
+Color("White")   # Actúa como "borrador"
+3. Size(k) - Sólo Impares
+python
+Size(3)   # ✅ Válido (3 píxeles)
+Size(4)   # ❌ Convertido a 3 automáticamente
+✏️ Comandos de Dibujo (Validación Estricta)
+DrawLine(dirX, dirY, pasos)
+Direcciones permitidas:
+
+text
+(-1,-1)  (0,-1)  (1,-1)
+(-1, 0)   (0,0)  (1, 0)
+(-1, 1)  (0, 1)  (1, 1)
+Ejemplo válido:
+
+python
+DrawLine(1, 0, 10)  # Horizontal derecha (10px)
+DrawCircle(dirX, dirY, radio)
+python
+# Dibuja círculo y mueve Wall-E al centro
+DrawCircle(1, 1, 5)  # Radio 5 en diagonal
+DrawRectangle(dirX, dirY, dist, ancho, alto)
+python
+# Rectángulo 8x4 a 5px de distancia
+DrawRectangle(0, 1, 5, 8, 4)
+🧠 Estructuras Avanzadas (Reglas Estrictas)
+Variables
+Nombres válidos: a-Z, 0-9, _ (no empezar con número)
+
 python
 ancho <- 20
-alto <- ancho * 1.618   # 📐 Proporción áurea
-
-# 📊 Condicionales avanzadas
-esBonito <- (ancho > 10) && (alto < 30)
-🔄 Bucles con GoTo
+nombre_valido <- ancho / 2
+1nombre <- 5  # ❌ Error sintáctico
+GoTo [label] (condición)
 python
-# 🌀 Patrón fractal
-Spawn(5, 5)
-Color("Teal")
-tam <- 30
+inicio:
+  DrawLine(1, 0, 1)
+  contador <- contador + 1
+  GoTo [inicio] (contador < 10)  # ✅ Etiqueta existe
+  GoTo [fin] (1 == 2)            # ✅ Condición válida
+  GoTo [no_existe] (True)        # ❌ Error semántico
+🚫 Errores Comunes (Evítalos!)
+Spawn múltiple:
 
-bucle:
-  DrawRectangle(0, 0, 0, tam, tam)
-  tam <- tam - 2
-  GoTo [bucle] (tam > 5)
-🎨 Paleta de Colores Disponibles
-<div style="display: flex; flex-wrap: wrap; gap: 10px;"> <div style="background: #FF0000; width: 60px; height: 30px; border-radius: 4px; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold;">Red</div> <div style="background: #00FF00; width: 60px; height: 30px; border-radius: 4px; display: flex; justify-content: center; align-items: center;">Green</div> <!-- Añade más colores --> </div>
-🚦 Manejo de Errores (¡Aprende Debugging!)
-El editor te ayudará a encontrar:
-
-🔍 Errores de sintaxis: Spawn(5,5 → Falta paréntesis
-
-🧩 Problemas lógicos: GoTo [inexistente] → Etiqueta no definida
-
-🚧 Límites: DrawLine(1,0,1000) → Fuera del canvas
-
-🏗 Ejemplo Completo: Cielo Estrellado
 python
-# 🌌 Configuración
-Spawn(0, 0)
-Color("MidnightBlue")
-Fill()  # Fondo nocturno
+Spawn(0,0)
+Spawn(5,5)  # ❌ Error crítico
+Colores no definidos:
 
-# ✨ Estrellas
+python
+Color("Azul")  # ❌ Debe ser "Blue"
+Direcciones inválidas:
+
+python
+DrawLine(2, -3, 5)  # ❌ Solo -1, 0, 1
+📜 Ejemplo Completo (100% Válido)
+python
+# PROGRAMA VÁLIDO (cumple todas las reglas)
+Spawn(15, 15)          # ✅ Único Spawn
+Color("DarkBlue")      # ✅ Color permitido
+Size(3)                # ✅ Tamaño impar
+
+# Dibuja espiral
+lados <- 0
+max_lados <- 20
+
+dibujar:
+  DrawLine(1, 0, 5 + lados)
+  DrawLine(0, 1, 5 + lados)
+  lados <- lados + 1
+  GoTo [dibujar] (lados < max_lados)
+
+# Relleno final
 Color("Gold")
-Size(1)
-[10].forEach(i -> {
-  x <- Random(0, GetCanvasSize())
-  y <- Random(0, GetCanvasSize())
-  Spawn(x, y)
-  DrawCircle(0, 0, 2)
-})
-🏆 Retos Creativos
-Intenta recrear estos diseños:
+Fill()                # ✅ Rellena área actual
+📚 Recursos
+Guía Completa de Sintaxis
 
-🌈 Arcoíris (usa círculos parciales)
+Ejemplos Validados
 
-🏙 Skyline de ciudad (rectángulos variables)
+Validador Online (opcional)
 
-🎨 Tu firma artística
-
-📚 ¿Quieres Saber Más?
-Guía Avanzada - Funciones personalizadas
-
-Galería de Arte - Inspírate con creaciones de la comunidad
-
-Trucos Pro - Optimiza tus diseños
-
-<div align="center"> <img src="assets/demo.gif" width="400" alt="Demo animada"> <p>¡Sube tus creaciones a #PixelWallE en redes!</p> </div> ```
+<div align="center"> <img src="assets/validation.gif" width="400" alt="Demo de validación"> <p>El editor marca errores en tiempo real según las reglas del PDF</p> </div> ```
