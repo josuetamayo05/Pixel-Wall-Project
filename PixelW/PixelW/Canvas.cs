@@ -5,13 +5,13 @@ using System.Windows.Forms;
 
 namespace PixelW
 {
-    internal class Canvas
+    public partial class Canvas
     {
         public int Size { get; }
         private Color[,] pixels;
         private int _zoomLevel = 1; // 1 = 100%, 2 = 200%, etc.
-        private const int MaxZoom = 5;
-        private const int MinZoom = 1;
+        public const int MaxZoom = 32;
+        public const int MinZoom = 4;
 
 
         public int ZoomLevel
@@ -49,6 +49,7 @@ namespace PixelW
                 return;
             }
             //dibuja un pixel en la posicion x,y o un cuadrado alrededor de x,y si brushSize es mayor q 1
+            int adjustSize=brushSize%2==0 ? brushSize -1: brushSize;
             int half = brushSize / 2;
             for (int i = x - half; i <= x + half; i++)
                 for (int j = y - half; j <= y + half; j++)
@@ -86,7 +87,23 @@ namespace PixelW
             Bitmap bmp = new Bitmap(Size * ZoomLevel, Size * ZoomLevel);
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                g.Clear(Color.White);
+                if (ZoomLevel > 3) // Solo mostrar grid cuando el zoom es alto
+                {
+                    using (Pen gridPen = new Pen(Color.FromArgb(30, Color.Gray)))
+
+
+                        for (int i = 0; i <= Size; i++)
+                        {
+                            {
+                                g.DrawLine(gridPen, i * ZoomLevel, 0, i * ZoomLevel, Size * ZoomLevel);
+                                g.DrawLine(gridPen, 0, i * ZoomLevel, Size * ZoomLevel, i * ZoomLevel);
+                            }
+                        }
+                }
+            
+            g.Clear(Color.White);
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
 
                 for (int x = 0; x < Size; x++)
                 {
@@ -94,9 +111,13 @@ namespace PixelW
                     {
                         if (pixels[x, y] != Color.White && pixels[x, y] != Color.Transparent)
                         {
+                            // Dibujar cada pixel con borde
                             g.FillRectangle(new SolidBrush(pixels[x, y]),
                                            x * ZoomLevel, y * ZoomLevel,
                                            ZoomLevel, ZoomLevel);
+                            g.DrawRectangle(Pens.LightGray,
+                                           x * ZoomLevel, y * ZoomLevel,
+                                           ZoomLevel - 1, ZoomLevel - 1);
                         }
                     }
                 }

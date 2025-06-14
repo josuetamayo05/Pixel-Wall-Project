@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace PixelW
 {
@@ -66,53 +67,153 @@ namespace PixelW
             if (!_labels.ContainsKey(label))
                 throw new Exception($"Etiqueta no encontrada: '{label}'");
 
-            if (EvaluateCondition(condition))
+            if (EvaluateBooleanExpression(condition))
                 currentLineNumber = _labels[label];
         }
 
-        private bool EvaluateCondition(string condition)
+        private bool EvaluateBooleanExpression(string expr)
         {
-            var operators = new[] { "==", "!=", "<=", ">=", "<", ">" };
-            foreach (var op in operators)
+            expr = expr.Trim();
+            if (expr.Contains("||"))
             {
-                if (condition.Contains(op))
+                var parts = expr.Split(new[] { "||" }, StringSplitOptions.RemoveEmptyEntries);
+                return EvaluateBooleanExpression(parts[0]) || EvaluateBooleanExpression(parts[1]);
+            }
+
+            if (expr.Contains("&&"))
+            {
+                var parts = expr.Split(new[] {"&&"},StringSplitOptions.RemoveEmptyEntries);
+                return EvaluateBooleanExpression(parts[0]) && EvaluateBooleanExpression(parts[1]);
+            }
+            string[] comparators = { "==", "<=", ">=", "<", ">" };
+            foreach (var c in comparators)
+            {
+                if (expr.Contains(c))
                 {
-                    var parts = condition.Split(new[] { op }, StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length != 2)
-                        throw new Exception($"Condición mal formada: {condition}");
-
-                    int left = EvaluateExpression(parts[0].Trim());
-                    int right = EvaluateExpression(parts[1].Trim());
-
-                    switch (op)
+                    var parts=expr.Split(new[] { c }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length != 2) continue;
+                    int left = EvaluateNumericExpression(parts[0].Trim());
+                    int right=EvaluateNumericExpression(parts[1].Trim());
+                    switch (c)
                     {
                         case "==": return left == right;
                         case "!=": return left != right;
-                        case "<": return left < right;
                         case "<=": return left <= right;
-                        case ">": return left > right;
                         case ">=": return left >= right;
+                        case "<": return left < right;
+                        case ">": return left > right;
                     }
                 }
             }
-            throw new Exception($"Operador no soportado en condición: {condition}");
+            if (_variables.Exists(expr))
+            {
+                var value = _variables.GetValue(expr);
+
+                if (value is bool boolValue)
+                {
+                    return boolValue;
+                }
+                throw new Exception($"La variable '{expr}' no es booleana (tiene valor {value} de tipo {value.GetType().Name})");
+            }
+            // Variables booleanas
+            if (expr == "true") return true;
+            if (expr == "false") return false;
+            if (_variables.Exists(expr)) return (bool)_variables.GetValue(expr);
+
+            throw new Exception($"Expresión booleana no válida: '{expr}'");
         }
+
+        
         private void ParseVariableAssignment(string line)
         {
             var parts = line.Split(new[] { "<-" }, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length != 2)
-                throw new Exception("Sintaxis incorrecta para asignación. Uso: variable <- valor");
+                throw new Exception("Sintaxis incorrecta para asignación. Uso: variable <- expresión");
 
             string varName = parts[0].Trim();
             string expression = parts[1].Trim();
 
-            // Validar nombre de variable
-            if (!IsValidVariableName(varName))
+            if (!_variables.IsValidVariableName(varName))
                 throw new Exception($"Nombre de variable inválido: '{varName}'");
 
-            // Evaluar expresión (versión simplificada)
-            int value = EvaluateExpression(expression);
-            _variables.Assign(varName, value);
+            try
+            {
+                // Intenta evaluar como expresión numérica primero
+                object value;
+                if (expression.Contains("&&") || expression.Contains("||") ||
+                    expression.Contains("==") || expression.Contains("!=") ||
+                    expression == "true" || expression == "false")
+                {
+                    value = EvaluateBooleanExpression(expression);
+                }
+                else
+                {
+                    value = EvaluateNumericExpression(expression);
+                }
+
+                _variables.Assign(varName, value);
+            }
+            catch
+            {
+                throw new Exception($"No se pudo evaluar la expresión: '{expression}'");
+            }
+        }
+
+        private int EvaluateNumericExpression(string expression)
+        {
+            expression = HandleParentheses(expression);
+            string[] operators = {"**", "*", "/", "%", "+", "-"};
+            foreach(string op in operators)
+            {
+                if (expression.Contains(op))
+                {
+                    var parts= expression.Split(new[] { op }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length != 2) continue;
+                    int left = EvaluateNumericExpression(parts[0].Trim());
+                    int right=EvaluateNumericExpression(parts[1].Trim());
+                    switch (op)
+                    {
+                        case "**":return (int)Math.Pow(left, right);
+                        case "*": return left * right; 
+                        case "/":
+                            if (right == 0) throw new Exception("No se puede dividir por cero"); 
+                            return left / right;
+                        case "%": return left% right;
+                        case "+": return left + right;
+                        case "-": return left - right;
+                    }
+                }
+            }
+            if (_variables.Exists(expression))
+            {
+                var result = _variables.GetValue(expression);
+
+                // Conversión segura con validación
+                if (result is int intValue)
+                {
+                    return intValue;
+                }
+                throw new Exception($"La variable '{expression}' no es numérica (tiene valor {result} de tipo {result.GetType().Name})");
+            }
+            // Si no hay operadores, es un literal o variable
+            if (int.TryParse(expression, out int value)) return value;
+            if (_variables.Exists(expression)) return (int)_variables.GetValue(expression);
+
+            throw new Exception($"Expresión numérica no válida: '{expression}'");
+        }
+
+        private string HandleParentheses(string expression)
+        {
+            while (expression.Contains("(") && expression.Contains(")"))
+            {
+                int open = expression.LastIndexOf('(');
+                int close = expression.LastIndexOf(')');
+                if (close == -1) throw new Exception("Parentesis no balanceados");
+                string inner = expression.Substring(open+1, close - open-1);
+                object result = EvaluateBooleanExpression(inner);
+                expression = expression.Remove(open, close-1).Insert(open,result.ToString());
+            }
+            return expression; 
         }
 
         private bool IsValidVariableName(string name)
@@ -123,49 +224,7 @@ namespace PixelW
                    !char.IsDigit(name[0]) &&
                    name.All(c => char.IsLetterOrDigit(c) || c == '-' || c=='_');
         }
-        private int EvaluateExpression(string expr)
-        {
-            //caso funcion nuevo
-            if(expr.Contains("(") && expr.EndsWith(")"))
-                return ParseFunctionCall(expr);         
-            // Caso simple: número directo
-            if (int.TryParse(expr, out int value))
-                return value;
-
-            // Caso variable existente
-            if (_variables.Exists(expr))
-                return _variables.GetValue(expr);
-
-            // Operaciones básicas
-            char[] ops = { '+', '-', '*', '/' };
-            foreach (char op in ops)
-            {
-                if (expr.Contains(op.ToString()))
-                {
-                    var parts = expr.Split(op);
-                    if (parts.Length != 2) continue;
-
-                    int left = EvaluateExpression(parts[0].Trim());
-                    int right = EvaluateExpression(parts[1].Trim());
-
-                    switch (op)
-                    {
-                        case '+': return left + right;
-                        case '-': return left - right;
-                        case '*': return left * right;
-                        case '/':
-                            if (right == 0) throw new Exception("División por cero");
-                            return left / right;
-                        default:
-                            throw new Exception($"Operador no soportado: {op}");
-                    }
-                }
-            }
-
-            throw new Exception($"Expresión no válida: '{expr}'");
-        }
         
-
         public void Execute(string code)//analiza y ejecuta cada linea
         {
             if (string.IsNullOrWhiteSpace(code))
@@ -203,6 +262,13 @@ namespace PixelW
             return _robot.GetColorCount(colorName, x1, y1, x2, y2);
         }
 
+        public void ParseSizeCommand(string line)
+        {
+            var parts = line.TrimEnd(')').Split('(');
+            if (parts.Length != 2) throw new Exception("Sintaxis incorrecta para Size. Uso Size(3)");
+            int size = int.Parse(parts[1]);
+            _robot.Size(size);
+        }
         private void ProcessLine(string line)
         {
             if(line.EndsWith(":"))
@@ -235,6 +301,7 @@ namespace PixelW
                 // Comentario, ignorar
                 return;
             }
+
             else if (line.StartsWith("GetColorCount("))
             {
                 ParseGetColorCount(line);
@@ -243,9 +310,9 @@ namespace PixelW
             {
                 ParseVariableAssignment(line);
             }
-            else if (line.StartsWith("BrushSize("))
+            else if (line.StartsWith("Size("))
             {
-                ParseBrushSizeCommand(line);
+                ParseSizeCommand(line);
             }
             else if (line.StartsWith("DrawCircle("))
             {
@@ -271,7 +338,7 @@ namespace PixelW
         private void ParseDrawRectangleCommand(string line)
         {
             var parts = line.TrimEnd(')').Split('(')[1].Split(',');
-            if (parts.Length != 6)
+            if (parts.Length != 5)
                 throw new Exception("Sintaxis incorrecta para DrawRectangle. Uso: DrawRectangle(dirX, dirY, distance, width, height)");
 
             int dirX = int.Parse(parts[0].Trim());
@@ -280,11 +347,7 @@ namespace PixelW
             int width = int.Parse(parts[3].Trim());
             int height = int.Parse(parts[4].Trim());
 
-            // Calcular posición central
-            int centerX = _robot.X + dirX * distance;
-            int centerY = _robot.Y + dirY * distance;
-
-            _robot.DrawRectangle(centerX - _robot.X, centerY - _robot.Y, width, height);
+            _robot.DrawRectangle(dirX, dirY, distance, width, height);
         }
         private void ParseDrawCircleCommand(string line)
         {
@@ -298,15 +361,7 @@ namespace PixelW
 
             _robot.DrawCircle(dirX, dirY, radius);
         }
-        private void ParseBrushSizeCommand(string line)
-        {
-            var parts = line.TrimEnd(')').Split('(');
-            if (parts.Length != 2)
-                throw new Exception("Sintaxis incorrecta para BrushSize. Uso: BrushSize(3)");
-
-            int size = int.Parse(parts[1]);
-            _robot.SetBrushSize(size);
-        }
+        
         
 
         private void ParseSpawnCommand(string line)
@@ -345,13 +400,6 @@ namespace PixelW
                 throw new Exception("Las direcciones deben ser -1, 0 o 1");
 
             _robot.DrawLine(dirX, dirY, distance);
-        }
-        
-        private int GetValueFromExpression(string expr)
-        {
-            if (int.TryParse(expr, out int value))
-                return value;
-            return _variables.GetValue(expr);
         }
     }
 }

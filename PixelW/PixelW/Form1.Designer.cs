@@ -1,4 +1,6 @@
-﻿namespace PixelW
+﻿using System.Windows.Forms;
+
+namespace PixelW
 {
     partial class Form1
     {
@@ -23,6 +25,7 @@
 
         private void InitializeComponent()
         {
+            
             this.txtEditor = new System.Windows.Forms.RichTextBox();
             this.numCanvasSize = new System.Windows.Forms.NumericUpDown();
             this.picCanvas = new System.Windows.Forms.PictureBox();
@@ -30,6 +33,9 @@
             this.btnRun = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnTest = new System.Windows.Forms.Button();
+            this.btnZoomIn = new System.Windows.Forms.Button();
+            this.btnZoomOut = new System.Windows.Forms.Button();
+            this.btnResetZoom = new System.Windows.Forms.Button();
             this.btn_Load = new System.Windows.Forms.Button();
             this.panelLineNumbers = new PixelW.LineNumberPanel();
             ((System.ComponentModel.ISupportInitialize)(this.numCanvasSize)).BeginInit();
@@ -65,11 +71,12 @@
             this.picCanvas.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.picCanvas.BackColor = System.Drawing.Color.White;
-            this.picCanvas.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.picCanvas.BackColor = System.Drawing.Color.DarkGray;
+            this.picCanvas.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.picCanvas.Location = new System.Drawing.Point(350, 12);
+            this.picCanvas.SizeMode = PictureBoxSizeMode.StretchImage;
             this.picCanvas.Name = "picCanvas";
-            this.picCanvas.Size = new System.Drawing.Size(500, 500);
+            this.picCanvas.Size = new System.Drawing.Size(640, 640);
             this.picCanvas.TabIndex = 2;
             this.picCanvas.TabStop = false;
             this.picCanvas.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PicCanvas_MouseMove);
@@ -107,6 +114,44 @@
             this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            //
+            
+
+            // 
+            // btnZoomIn
+            // 
+            this.btnZoomIn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnZoomIn.Location = new System.Drawing.Point(860, 300); // Debajo del botón Load
+            this.btnZoomIn.Name = "btnZoomIn";
+            this.btnZoomIn.Size = new System.Drawing.Size(120, 30);
+            this.btnZoomIn.TabIndex = 9;
+            this.btnZoomIn.Text = "Zoom +";
+            this.btnZoomIn.UseVisualStyleBackColor = true;
+            this.btnZoomIn.Click += new System.EventHandler(this.btnZoomIn_Click);
+
+            // 
+            // btnZoomOut
+            // 
+            this.btnZoomOut.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnZoomOut.Location = new System.Drawing.Point(860, 335);
+            this.btnZoomOut.Name = "btnZoomOut";
+            this.btnZoomOut.Size = new System.Drawing.Size(120, 30);
+            this.btnZoomOut.TabIndex = 10;
+            this.btnZoomOut.Text = "Zoom -";
+            this.btnZoomOut.UseVisualStyleBackColor = true;
+            this.btnZoomOut.Click += new System.EventHandler(this.btnZoomOut_Click);
+
+            // 
+            // btnResetZoom
+            // 
+            this.btnResetZoom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnResetZoom.Location = new System.Drawing.Point(860, 370);
+            this.btnResetZoom.Name = "btnResetZoom";
+            this.btnResetZoom.Size = new System.Drawing.Size(120, 30);
+            this.btnResetZoom.TabIndex = 11;
+            this.btnResetZoom.Text = "Reset Zoom";
+            this.btnResetZoom.UseVisualStyleBackColor = true;
+            this.btnResetZoom.Click += new System.EventHandler(this.btnResetZoom_Click);
             // 
             // btnTest
             // 
@@ -154,6 +199,10 @@
             this.Controls.Add(this.btnTest);
             this.Controls.Add(this.btn_Load);
             this.Controls.Add(this.panelLineNumbers);
+            // 3. Añadir los nuevos botones a los controles del formulario
+            this.Controls.Add(this.btnZoomIn);
+            this.Controls.Add(this.btnZoomOut);
+            this.Controls.Add(this.btnResetZoom);
             this.Name = "Form1";
             this.Text = "PixelW";
             ((System.ComponentModel.ISupportInitialize)(this.numCanvasSize)).EndInit();

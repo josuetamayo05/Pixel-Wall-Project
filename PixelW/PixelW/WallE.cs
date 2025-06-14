@@ -81,11 +81,17 @@ namespace PixelW
                     throw new Exception($"Color no soportado: {colorName}");
             }
         }
-        public void DrawRectangle(int offsetX, int offsetY, int width, int height)
+        public void DrawRectangle(int dirX, int dirY, int distance, int width, int height)
         {
-            int centerX = X + offsetX;
-            int centerY = Y + offsetY;
+            // Validar dirección (debe ser -1, 0 o 1)
+            if (Math.Abs(dirX) > 1 || Math.Abs(dirY) > 1)
+                throw new Exception("Las direcciones deben ser -1, 0 o 1");
 
+            // Calcular posición central
+            int centerX = X + dirX * distance;
+            int centerY = Y + dirY * distance;
+
+            // Calcular esquinas del rectángulo
             int startX = centerX - width / 2;
             int startY = centerY - height / 2;
             int endX = centerX + width / 2;
@@ -100,8 +106,13 @@ namespace PixelW
             DrawHorizontalLine(startX, endX, endY);   // Lado inferior
             DrawVerticalLine(startY, endY, startX);   // Lado izquierdo
             DrawVerticalLine(startY, endY, endX);     // Lado derecho
+
+            // Mover Wall-E al centro del rectángulo (opcional, según especificación)
+            X = centerX;
+            Y = centerY;
         }
 
+        // Métodos auxiliares (mantener los existentes)
         private void DrawHorizontalLine(int x1, int x2, int y)
         {
             for (int x = Math.Min(x1, x2); x <= Math.Max(x1, x2); x++)
@@ -131,40 +142,80 @@ namespace PixelW
                 }
             }
         }
-        public void SetBrushSize(int size)
-        {
-            if (size < 1)
-                throw new Exception("El tamaño debe ser mayor a 0");
 
-            BrushSize = size % 2 == 0 ? size - 1 : size;
-        }
-        public void DrawCircle(int offsetX, int offsetY, int radius)
+        public void DrawCircle(int dirX, int dirY, int radius)
         {
-            int centerX = X + offsetX;
-            int centerY = Y + offsetY;
+            int centerX = X + dirX;
+            int centerY = Y + dirY;
 
-            if (!canvas.IsWithinBounds(centerX, centerY) ||
-                !canvas.IsWithinBounds(centerX + radius, centerY + radius) ||
-                !canvas.IsWithinBounds(centerX - radius, centerY - radius))
+            // Validar bordes del canvas
+            if (!canvas.IsWithinBounds(centerX - radius, centerY - radius) ||
+                !canvas.IsWithinBounds(centerX + radius, centerY + radius))
             {
                 throw new Exception("El círculo excede los límites del canvas");
             }
 
-            // Algoritmo del punto medio para círculos
-            int x = radius;
-            int y = 0;
-            int err = 0;
+            // Algoritmo mejorado de Bresenham para círculos
+            int x = 0;
+            int y = radius;
+            int d = 3 - 2 * radius;
 
-            while (x >= y)
+            DrawCirclePoints(centerX, centerY, x, y);
+
+            while (y >= x)
             {
-                DrawCirclePoints(centerX, centerY, x, y);
+                x++;
 
-                y++;
-                err += 1 + 2 * y;
-                if (2 * (err - x) + 1 > 0) //Decide si debemos mover x hacia adentro para mantener la forma circular
+                if (d > 0)
                 {
-                    x--;
-                    err += 1 - 2 * x;
+                    y--;
+                    d = d + 4 * (x - y) + 10;
+                }
+                else
+                {
+                    d = d + 4 * x + 6;
+                }
+
+                DrawCirclePoints(centerX, centerY, x, y);
+            }
+
+            // Mover Wall-E al centro del círculo
+            X = centerX;
+            Y = centerY;
+        }
+
+        private void DrawCirclePoints(int cx, int cy, int x, int y)
+        {
+            // Dibuja los 8 puntos simétricos con manejo de grosor
+            if (BrushSize == 1)
+            {
+                // Versión precisa para pincel delgado
+                canvas.DrawPixel(cx + x, cy + y, CurrentColor);
+                canvas.DrawPixel(cx - x, cy + y, CurrentColor);
+                canvas.DrawPixel(cx + x, cy - y, CurrentColor);
+                canvas.DrawPixel(cx - x, cy - y, CurrentColor);
+                canvas.DrawPixel(cx + y, cy + x, CurrentColor);
+                canvas.DrawPixel(cx - y, cy + x, CurrentColor);
+                canvas.DrawPixel(cx + y, cy - x, CurrentColor);
+                canvas.DrawPixel(cx - y, cy - x, CurrentColor);
+            }
+            else
+            {
+                // Versión para pincel grueso (dibuja pequeños cuadrados)
+                int halfSize = BrushSize / 2;
+                for (int i = -halfSize; i <= halfSize; i++)
+                {
+                    for (int j = -halfSize; j <= halfSize; j++)
+                    {
+                        canvas.DrawPixel(cx + x + i, cy + y + j, CurrentColor, 1);
+                        canvas.DrawPixel(cx - x + i, cy + y + j, CurrentColor, 1);
+                        canvas.DrawPixel(cx + x + i, cy - y + j, CurrentColor, 1);
+                        canvas.DrawPixel(cx - x + i, cy - y + j, CurrentColor, 1);
+                        canvas.DrawPixel(cx + y + i, cy + x + j, CurrentColor, 1);
+                        canvas.DrawPixel(cx - y + i, cy + x + j, CurrentColor, 1);
+                        canvas.DrawPixel(cx + y + i, cy - x + j, CurrentColor, 1);
+                        canvas.DrawPixel(cx - y + i, cy - x + j, CurrentColor, 1);
+                    }
                 }
             }
         }
@@ -215,21 +266,18 @@ namespace PixelW
             return count;
         }
 
-        private void DrawCirclePoints(int cx, int cy, int x, int y)
-        {//dibujo los 8 simetricos al centro cx,cy lo divido en 8 octantes
-            canvas.DrawPixel(cx + x, cy + y, CurrentColor, BrushSize); //arriba derecha
-            canvas.DrawPixel(cx - x, cy + y, CurrentColor, BrushSize);//abajo derecha
-            canvas.DrawPixel(cx + x, cy - y, CurrentColor, BrushSize);//arriba izq
-            canvas.DrawPixel(cx - x, cy - y, CurrentColor, BrushSize);//abajo izq
-            canvas.DrawPixel(cx + y, cy + x, CurrentColor, BrushSize);//derech arriba
-            canvas.DrawPixel(cx - y, cy + x, CurrentColor, BrushSize);//derec abaj
-            canvas.DrawPixel(cx + y, cy - x, CurrentColor, BrushSize);//izq arr
-            canvas.DrawPixel(cx - y, cy - x, CurrentColor, BrushSize);//izq abaj
-        }
-
         public int IsBrushColor(string colorName)
         {
             return CurrentColor.Name.Equals(colorName, StringComparison.OrdinalIgnoreCase)? 1: 0;
+        }
+       
+        public void Size(int k)
+        {
+            if (k <= 0)
+            {
+                throw new ArgumentOutOfRangeException("El tamaño del pincel debe ser mayor que 0");
+            }
+            BrushSize = k % 2 == 0 ? k - 1 : k;
         }
 
         public void Fill() //rell espac conexos

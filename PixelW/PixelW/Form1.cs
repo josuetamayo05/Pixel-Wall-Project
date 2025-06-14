@@ -18,18 +18,23 @@ namespace PixelW
         private Canvas canvas;
         private WallE robot;
         private CommandParser parser;
-        private const int InitialCanvasSize = 200; // Renombramos la constante
+        private const int InitialCanvasSize = 32; // Renombramos la constante
         private StatusStrip statusStrip;
         private ToolStripStatusLabel statusLabel;
+        private Button btnZoomIn;
+        private Button btnZoomOut;
+        private Button btnResetZoom;
 
         public Form1()
         {
+            InitializeComponent();
             variableManager = new VariableManager();
             canvas = new Canvas(InitialCanvasSize);
+            canvas.ZoomLevel = 8;
+            UpdateCanvas();
             robot = new WallE(canvas);
             parser = new CommandParser(robot, variableManager);
 
-            InitializeComponent();
             statusStrip = new StatusStrip();
             statusLabel = new ToolStripStatusLabel();
             statusStrip.Items.Add(statusLabel);
@@ -58,7 +63,7 @@ namespace PixelW
         private void txtEditor_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Mostrar autocompletado cuando se escriba '(' o '['
-            if (e.KeyChar == '(' || e.KeyChar == '[')
+            if (e.KeyChar == '|')
             {
                 ShowCompletionMenu();
 
@@ -108,7 +113,7 @@ namespace PixelW
             // También puedes agregar el trigger para paréntesis
             txtEditor.KeyPress += (sender, e) =>
             {
-                if (e.KeyChar == '(')
+                if (e.KeyChar == '|')
                 {
                     ShowCustomCompletionMenu(GetAutoCompleteItems());
                     e.Handled = true;
@@ -168,10 +173,33 @@ namespace PixelW
         {
             if (Control.ModifierKeys == Keys.Control)
             {
-                canvas.ZoomLevel += e.Delta > 0 ? 1 : -1;
+                // Cambiar el incremento del zoom para mayor granularidad
+                int zoomChange = e.Delta > 0 ? 2 : -2;
+                canvas.ZoomLevel = Math.Max(Canvas.MinZoom, Math.Min(Canvas.MaxZoom, canvas.ZoomLevel + zoomChange));
                 UpdateCanvas();
                 UpdateStatus();
             }
+        }
+
+        private void btnZoomIn_Click(object sender, EventArgs e)
+        {
+            canvas.ZoomLevel = Math.Min(20, canvas.ZoomLevel + 2);
+            UpdateCanvas();
+            UpdateStatus();
+        }
+
+        private void btnZoomOut_Click(object sender, EventArgs e)
+        {
+            canvas.ZoomLevel = Math.Max(1, canvas.ZoomLevel - 2);
+            UpdateCanvas();
+            UpdateStatus();
+        }
+
+        private void btnResetZoom_Click(object sender, EventArgs e)
+        {
+            canvas.ZoomLevel = 1;
+            UpdateCanvas();
+            UpdateStatus();
         }
         private List<string> GetAutoCompleteItems()
         {
@@ -230,9 +258,9 @@ namespace PixelW
         {
             var menu = new ContextMenuStrip();
             var commands = new List<string>
-    {
-        "Color(", "Circle(", "CanvasSize"
-    };
+            {
+                "Color(", "Circle(", "CanvasSize"
+            };
 
             foreach (var cmd in commands.Where(c => c.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
             {
@@ -254,16 +282,15 @@ namespace PixelW
         {
             try
             {
-                // Limpiar estado previo
+                // Reiniciar el parser con cada ejecución
                 variableManager = new VariableManager();
-                InitializeCanvas(canvas.Size); // Mantiene el tamaño actual
+                parser = new CommandParser(robot, variableManager);
 
                 parser.Execute(txtEditor.Text);
                 UpdateCanvas();
             }
             catch (Exception ex)
             {
-                // Mostrar error con línea específica
                 var match = System.Text.RegularExpressions.Regex.Match(ex.Message, @"línea (\d+)");
                 if (match.Success)
                 {
@@ -378,6 +405,7 @@ namespace PixelW
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         private void InvalidateLayout()
         {
             // Ajusta otros controles si es necesario
@@ -388,8 +416,14 @@ namespace PixelW
         {
             var oldImage = picCanvas.Image;
             picCanvas.Image = canvas.ToBitmap();
-            picCanvas.Size = new Size(canvas.Size, canvas.Size);
+
+            // Asegúrate que el PictureBox tenga el tamaño adecuado para el zoom
+            picCanvas.Size = new Size(
+                canvas.Size * canvas.ZoomLevel,
+                canvas.Size * canvas.ZoomLevel);
+
             oldImage?.Dispose();
         }
+
     }
 }
