@@ -280,27 +280,23 @@ namespace PixelW
         }
         private void BtnRun_Click(object sender, EventArgs e)
         {
-            try
-            {
-                // Reiniciar el parser con cada ejecución
-                variableManager = new VariableManager();
-                parser = new CommandParser(robot, variableManager);
+            // Reiniciar el parser con cada ejecución
+            variableManager = new VariableManager();
+            parser = new CommandParser(robot, variableManager);
 
-                parser.Execute(txtEditor.Text);
-                UpdateCanvas();
-            }
-            catch (Exception ex)
-            {
-                var match = System.Text.RegularExpressions.Regex.Match(ex.Message, @"línea (\d+)");
-                if (match.Success)
-                {
-                    int errorLine = int.Parse(match.Groups[1].Value);
-                    HighlightErrorLine(errorLine);
-                }
+            var result = parser.Execute(txtEditor.Text);
 
-                MessageBox.Show(ex.Message, "Error de ejecución",
-                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (!result.Success)
+            {
+                MessageBox.Show($"Error en línea {result.ErrorLine}: {result.ErrorMessage}",
+                              "Error de ejecución",
+                              MessageBoxButtons.OK,
+                              MessageBoxIcon.Error);
+
+                HighlightErrorLine(result.ErrorLine);
             }
+
+            UpdateCanvas(); // Actualizar siempre, incluso con errores
         }
 
         private void HighlightErrorLine(int lineNumber)
@@ -314,9 +310,9 @@ namespace PixelW
             try
             {
                 int newSize = (int)numCanvasSize.Value;
-                if (newSize < 10 || newSize > 500) // Ajusta los límites según necesites
+                if (newSize < 10 || newSize > 640) // Ajusta los límites según necesites
                 {
-                    MessageBox.Show("El tamaño debe estar entre 10 y 500", "Error",
+                    MessageBox.Show("El tamaño debe estar entre 10 y 640", "Error",
                                   MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }

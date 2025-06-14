@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace PixelW
 {
-    internal class CommandParser
+    internal partial class CommandParser
     {
        
 
@@ -17,6 +17,47 @@ namespace PixelW
         {
             _robot = robot ?? throw new ArgumentNullException(nameof(robot));
             _variables = variables ?? throw new ArgumentNullException(nameof(variables));
+        }
+        public class ExecutionResult
+        {
+            public bool Success { get; set; }
+            public string ErrorMessage { get; set; }
+            public int ErrorLine { get; set; }
+
+            public static ExecutionResult SuccessResult() => new ExecutionResult { Success = true };
+        }
+        public ExecutionResult Execute(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+                return new ExecutionResult
+                {
+                    Success = false,
+                    ErrorMessage = "El código no puede estar vacío"
+                };
+
+            string[] lines = code.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+            try
+            {
+                for (currentLineNumber = 0; currentLineNumber < lines.Length; currentLineNumber++)
+                {
+                    string line = lines[currentLineNumber].Trim();
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+
+                    ProcessLine(line);
+                }
+
+                return ExecutionResult.SuccessResult();
+            }
+            catch (Exception ex)
+            {
+                return new ExecutionResult
+                {
+                    Success = false,
+                    ErrorMessage = ex.Message,
+                    ErrorLine = currentLineNumber + 1
+                };
+            }
         }
         private int ParseFunctionCall(string line)
         {
@@ -225,28 +266,7 @@ namespace PixelW
                    name.All(c => char.IsLetterOrDigit(c) || c == '-' || c=='_');
         }
         
-        public void Execute(string code)//analiza y ejecuta cada linea
-        {
-            if (string.IsNullOrWhiteSpace(code))
-                throw new Exception("El código no puede estar vacío");
-
-            string[] lines = code.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-
-            for (currentLineNumber = 0; currentLineNumber < lines.Length; currentLineNumber++)
-            {
-                try
-                {
-                    string line = lines[currentLineNumber].Trim();
-                    if (string.IsNullOrWhiteSpace(line)) continue;
-
-                    ProcessLine(line);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Error en línea {currentLineNumber + 1}: {ex.Message}");
-                }
-            }
-        }
+        
         private int ParseGetColorCount(string line)
         {
             var parts = line.TrimEnd(')').Split('(')[1].Split(',');
