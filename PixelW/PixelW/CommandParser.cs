@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
@@ -238,7 +239,6 @@ namespace PixelW
         {
             try
             {
-                // Extracción más robusta de la etiqueta y condición
                 var match = Regex.Match(line,
                     @"GoTo\s*\[\s*([a-zA-Z][a-zA-Z0-9_-]*)\s*\]\s*\(\s*(.*)\s*\)",
                     RegexOptions.IgnoreCase);
@@ -254,23 +254,18 @@ namespace PixelW
 
                 if (EvaluateBooleanExpression(condition))
                 {
-                    // Ajustamos para que en la próxima iteración se ejecute la línea destino
                     currentLineNumber = targetLine - 1; // -1 porque después se incrementa
                 }
             }
             catch (Exception ex)
             {
-                if (result != null)
+                result?.Errors.Add(new ErrorInfo
                 {
-                    result.Errors.Add(new ErrorInfo
-                    {
-                        LineNumber = currentLineNumber + 1,
-                        Message = ex.Message,
-                        Type = ErrorType.Runtime,
-                        CodeSnippet = line
-                    });
-                }
-                else throw;
+                    LineNumber = currentLineNumber + 1,
+                    Message = $"Error en GoTo: {ex.Message}",
+                    Type = ErrorType.Runtime,
+                    CodeSnippet = line
+                });
             }
         }
 
@@ -278,44 +273,59 @@ namespace PixelW
         {
             expr = expr.Trim();
 
-            // Manejo de paréntesis primero
+            // Paso 1: Manejar paréntesis anidados
+            expr = EvaluateParentheses(expr);
+
+            // Paso 2: Evaluar operadores lógicos con precedencia correcta
+            string[] operators = { "&&", "||" };
+            foreach (var op in operators)
+            {
+                int opIndex;
+                while ((opIndex = expr.LastIndexOf(op)) > 0)
+                {
+                    string leftPart = expr.Substring(0, opIndex).Trim();
+                    string rightPart = expr.Substring(opIndex + op.Length).Trim();
+
+                    bool left = EvaluateBooleanExpression(leftPart);
+                    bool right = EvaluateBooleanExpression(rightPart);
+
+                    return op == "&&" ? left && right : left || right;
+                }
+            }
+
+            // Paso 3: Evaluar comparaciones individuales
+            return EvaluateSimpleComparison(expr);
+        }
+
+        private string EvaluateParentheses(string expr)
+        {
             while (expr.Contains("(") && expr.Contains(")"))
             {
                 int lastOpen = expr.LastIndexOf('(');
                 int close = expr.IndexOf(')', lastOpen);
 
-                if (close == -1)
-                    throw new Exception("Paréntesis no balanceados");
+                if (close == -1) break;
 
-                string innerExpr = expr.Substring(lastOpen + 1, close - lastOpen - 1);
-                bool innerResult = EvaluateBooleanExpression(innerExpr);
+                string inner = expr.Substring(lastOpen + 1, close - lastOpen - 1);
+                bool innerResult = EvaluateBooleanExpression(inner);
                 expr = expr.Remove(lastOpen, close - lastOpen + 1)
                           .Insert(lastOpen, innerResult ? "1" : "0");
             }
-
-            // Operadores lógicos con precedencia correcta
-            string[] boolOperators = { "||", "&&" };
-            foreach (var op in boolOperators)
-            {
-                if (expr.Contains(op))
-                {
-                    var parts = expr.Split(new[] { op }, StringSplitOptions.None);
-                    bool left = EvaluateBooleanExpression(parts[0]);
-                    bool right = EvaluateBooleanExpression(parts[1]);
-
-                    return op == "||" ? left || right : left && right;
-                }
-            }
-
-            // Operadores de comparación
+            return expr;
+        }
+        private bool EvaluateSimpleComparison(string expr)
+        {
+            // Evaluar comparaciones simples (==, !=, <, >, etc.)
             string[] comparators = { "==", "!=", "<=", ">=", "<", ">" };
             foreach (var comp in comparators)
             {
                 if (expr.Contains(comp))
                 {
                     var parts = expr.Split(new[] { comp }, StringSplitOptions.None);
-                    int left = EvaluateNumericExpression(parts[0]);
-                    int right = EvaluateNumericExpression(parts[1]);
+                    if (parts.Length != 2) continue;
+
+                    int left = EvaluateNumericExpression(parts[0].Trim());
+                    int right = EvaluateNumericExpression(parts[1].Trim());
 
                     switch (comp)
                     {
@@ -329,11 +339,11 @@ namespace PixelW
                 }
             }
 
-            // Valores directos
+            // Evaluar valores booleanos directos
             if (expr == "1" || expr.Equals("true", StringComparison.OrdinalIgnoreCase)) return true;
             if (expr == "0" || expr.Equals("false", StringComparison.OrdinalIgnoreCase)) return false;
 
-            // Variables
+            // Evaluar variables
             if (_variables.Exists(expr))
             {
                 object value = _variables.GetValue(expr);
@@ -366,7 +376,10 @@ namespace PixelW
                     if (expression.StartsWith("GetActualX()") ||
                         expression.StartsWith("GetActualY()") ||
                         expression.StartsWith("GetCanvasSize()") ||
-                        expression.StartsWith("IsBrushColor("))
+                        expression.StartsWith("IsBrushColor(")||
+                        expression.StartsWith("IsBrushSize(")||
+                        expression.StartsWith("IsCanvasColor(")||
+                        expression.StartsWith("GetColorCount"))
                     {
                         // Usar ParseFunctionCall para evaluar funciones
                         int funcValue = ParseFunctionCall(expression);
@@ -410,22 +423,6 @@ namespace PixelW
             }
         }
 
-        private void ProcessLabel(string line, ParseResult result)
-        {
-            string labelName = line.Trim();
-
-            if (!Regex.IsMatch(labelName, @"^[a-zA-Z][a-zA-Z0-9_-]*$"))
-            {
-                throw new Exception($"Nombre de etiqueta inválido: '{labelName}'");
-            }
-
-            if (_labels.ContainsKey(labelName))
-            {
-                throw new Exception($"Etiqueta duplicada: '{labelName}'");
-            }
-
-            _labels[labelName] = currentLineNumber;
-        }
         private int ParseFunctionCall(string line)
         {
             if (line.StartsWith("GetActualX()")) return _robot.GetActualX();
@@ -449,8 +446,50 @@ namespace PixelW
 
                 return _robot.IsBrushColor(colorName);
             }
+            if (line.StartsWith("IsBrushSize("))
+            {
+                var parts = line.TrimEnd(')').Split('(')[1].Split(',');
+                int size = int.Parse(parts[0].Trim());
+                return _robot.IsBrushSize(size);
+            }
+            if (line.StartsWith("IsCanvasColor("))
+            {
+                var parts = line.TrimEnd(')').Split('(')[1].Split(',');
+                string colorName = parts[0].Trim('"', ' ', '\'');
+                int vertical = int.Parse(parts[1].Trim());
+                int horizontal = int.Parse(parts[2].Trim());
+                return _robot.IsCanvasColor(colorName, vertical, horizontal);
+            }
+            if (line.StartsWith("GetColorCount("))
+            {
+                var parts = line.TrimEnd(')').Split('(')[1].Split(',');
+                string colorName = parts[0].Trim('"', ' ', '\'');
+                int x1 = int.Parse(parts[1].Trim());
+                int y1 = int.Parse(parts[2].Trim());
+                int x2 = int.Parse(parts[3].Trim());
+                int y2 = int.Parse(parts[4].Trim());
+                return _robot.GetColorCount(colorName, x1, y1, x2, y2);
+            }
+
             throw new Exception($"Función no reconocida: {line}");
         }
+        private void ProcessLabel(string line, ParseResult result)
+        {
+            string labelName = line.Trim();
+
+            if (!Regex.IsMatch(labelName, @"^[a-zA-Z][a-zA-Z0-9_-]*$"))
+            {
+                throw new Exception($"Nombre de etiqueta inválido: '{labelName}'");
+            }
+
+            if (_labels.ContainsKey(labelName))
+            {
+                throw new Exception($"Etiqueta duplicada: '{labelName}'");
+            }
+
+            _labels[labelName] = currentLineNumber;
+        }
+        
         private int EvaluateNumericExpression(string expression)
         {
             expression = HandleParentheses(expression);
@@ -580,6 +619,8 @@ namespace PixelW
                 }
             }
         }
+
+        
         private void ProcessLine(string line, ParseResult result = null)
         {
             try
@@ -601,6 +642,8 @@ namespace PixelW
                 {
                     ParseGoTo(line, result);
                 }
+                
+                
                 else if (line.StartsWith("DrawLine("))
                 {
                     ParseDrawLineCommand(line, result);
@@ -622,6 +665,7 @@ namespace PixelW
                 {
                     ParseSizeCommand(line, result);
                 }
+               
                 else if (line.StartsWith("DrawRectangle("))
                 {
                     ParseDrawRectangleCommand(line, result);
@@ -630,7 +674,7 @@ namespace PixelW
                 {
                     ParseDrawCircleCommand(line, result);
                 }
-               
+
                 else if (line.StartsWith("Fill(") || line.Trim() == "Fill")
                 {
                     _robot.Fill();

@@ -9,7 +9,7 @@ namespace PixelW
     {
         public int Size { get; }
         public Color[,] pixels;
-        public int _zoomLevel = 1; // 1 = 100%, 2 = 200%, etc.
+        public int _zoomLevel = 8; // 1 = 100%, 2 = 200%, etc.
         public const int MaxZoom = 32;
         public const int MinZoom = 4;
 

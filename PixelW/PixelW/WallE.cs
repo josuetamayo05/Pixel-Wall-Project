@@ -97,6 +97,18 @@ namespace PixelW
                     throw new Exception($"Color no soportado: {colorName}");
             }
         }
+
+        public int IsCanvasColor(string color, int vertical, int horizontal)
+        {
+            int targetX = X + horizontal;
+            int targetY = Y + vertical;
+
+            if (!canvas.IsWithinBounds(targetX, targetY))
+                return 0;
+
+            Color targetColor = Color.FromName(color);
+            return canvas.GetPixel(targetX, targetY).ToArgb() == targetColor.ToArgb() ? 1 : 0;
+        }
         public void DrawRectangle(int dirX, int dirY, int distance, int width, int height)
         {
             // Validar dirección (debe ser -1, 0 o 1)
@@ -287,6 +299,10 @@ namespace PixelW
             return count;
         }
 
+        public int IsBrushSize(int size)
+        { 
+            return this.BrushSize == size ? 1 : 0;
+        }
         public int IsBrushColor(string colorName)
         {
             return CurrentColor.Name.Equals(colorName, StringComparison.OrdinalIgnoreCase)? 1: 0;
