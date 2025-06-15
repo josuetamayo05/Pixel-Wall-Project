@@ -51,18 +51,7 @@ namespace PixelW
 
         
 
-        private bool IsValidLabelName(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                return false;
-
-            // No puede empezar con número ni guión
-            if (char.IsDigit(name[0]) || name[0] == '-')
-                return false;
-
-            // Solo letras, números, guiones y guiones bajos
-            return name.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '-');
-        }
+        
 
         private void ValidateSyntax(string line, int lineNumber,ParseResult result)
         {
@@ -146,7 +135,29 @@ namespace PixelW
             }
         }
 
+        private bool IsValidLabelName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
 
+            // No puede empezar con número ni guión
+            if (char.IsDigit(name[0]) || name[0] == '-')
+                return false;
+
+            // Solo letras, números, guiones y guiones bajos
+            return name.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '-');
+        }
+
+        private bool IsLabelLine(string line)
+        {
+            // Verifica si es una etiqueta válida (no comando)
+            return !string.IsNullOrWhiteSpace(line) &&
+                   !line.StartsWith("Spawn(") &&
+                   !line.StartsWith("Color(") &&
+                   !line.StartsWith("GoTo") &&
+                   // ... otros comandos ...
+                   Regex.IsMatch(line, @"^[a-zA-Z][a-zA-Z0-9_-]*$");
+        }
         public ParseResult Execute(string code)
         {
             var result = new ParseResult();
@@ -160,6 +171,36 @@ namespace PixelW
 
             try
             {
+                _labels.Clear();
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    string line = lines[i].Trim();
+                    if (IsLabelLine(line))
+                    {
+                        string labelName = line; 
+                        if(_labels.ContainsKey(labelName))
+                        {
+                            result.Errors.Add(new ErrorInfo
+                            {
+                                LineNumber = i + 1,
+                                Message = $"Etiqueta duplicada: '{labelName}'",
+                                Type = ErrorType.Semantic,
+                                CodeSnippet = line
+                            });
+                        }
+                        else
+                        {
+                            _labels[labelName] = i;
+                        }
+                    }
+                    
+                }
+                if (result.Errors.Count > 0)
+                {
+                    result.Success = false;
+                    return result;
+                }
+
                 for (currentLineNumber = 0; currentLineNumber < lines.Length; currentLineNumber++)
                 {
                     string line = lines[currentLineNumber].Trim();
