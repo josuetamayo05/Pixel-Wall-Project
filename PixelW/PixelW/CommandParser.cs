@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace PixelW
 {
@@ -26,22 +27,6 @@ namespace PixelW
 
             public static ExecutionResult SuccessResult() => new ExecutionResult { Success = true };
         }
-        
-        private int ParseFunctionCall(string line)
-        {
-            if (line.StartsWith("GetActualX()")) return _robot.GetActualX();
-            if (line.StartsWith("GetActualY()")) return _robot.GetActualY();
-            if (line.StartsWith("GetCanvasSize()")) return _robot.GetCanvasSize();
-            if (line.StartsWith("IsBrushColor("))
-            {
-                var parts = line.TrimEnd(')').Split('(')[1].Split(',');
-                string colorName = parts[0].Trim('"', ' ', '\'');
-                return _robot.CurrentColor.Name.Equals(colorName, StringComparison.OrdinalIgnoreCase) ? 1 : 0;
-            }
-
-            throw new Exception($"Función no reconocida: {line}");
-        }
-
         public class ParseResult
         {
             public bool Success { get; set; }
@@ -64,29 +49,19 @@ namespace PixelW
 
         public Dictionary<string, int> _labels = new Dictionary<string, int>(); // Guarda línea de cada etiqueta
 
-        private void ParseLabel(string line, ParseResult result)
-        {
-            try
-            {
-                string labelName = line.TrimEnd(':').Trim();
-                if (string.IsNullOrWhiteSpace(labelName))
-                    throw new Exception("El nombre de etiqueta no puede estar vacío");
+        
 
-                _labels[labelName] = currentLineNumber;
-            }
-            catch (Exception e) {
-                if (result != null)
-                {
-                    result.Errors.Add(new ErrorInfo
-                    {
-                        LineNumber = currentLineNumber + 1,
-                        Message = e.Message,
-                        Type = ErrorType.Runtime,
-                        CodeSnippet = line
-                    });
-                }
-                else throw;
-            }
+        private bool IsValidLabelName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
+
+            // No puede empezar con número ni guión
+            if (char.IsDigit(name[0]) || name[0] == '-')
+                return false;
+
+            // Solo letras, números, guiones y guiones bajos
+            return name.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '-');
         }
 
         private void ValidateSyntax(string line, int lineNumber,ParseResult result)
@@ -139,31 +114,19 @@ namespace PixelW
         {
             try
             {
-                // Normalizar espacios
-                goToLine = goToLine.Replace(" ", "");
+                // Usar expresión regular para extraer la etiqueta
+                var match = System.Text.RegularExpressions.Regex.Match(
+                    goToLine,
+                    @"GoTo\s*\[([^\]]+)\]\s*\(([^)]+)\)",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
-                int startBracket = goToLine.IndexOf('[');
-                int endBracket = goToLine.IndexOf(']');
+                if (!match.Success)
+                    throw new Exception("Formato incorrecto para GoTo. Uso: GoTo [etiqueta] (condición)");
 
-                if (startBracket == -1 || endBracket == -1)
-                {
-                    throw new Exception("Faltan corchetes [] en comando GoTo");
-                }
-
-                if (endBracket <= startBracket)
-                {
-                    throw new Exception("Corchetes mal formados");
-                }
-
-                string label = goToLine.Substring(startBracket + 1, endBracket - startBracket - 1);
+                string label = match.Groups[1].Value.Trim();
 
                 // Validar nombre de etiqueta
-                if (string.IsNullOrWhiteSpace(label))
-                {
-                    throw new Exception("El nombre de etiqueta no puede estar vacío");
-                }
-
-                if (!label.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '-'))
+                if (!IsValidLabelName(label))
                 {
                     throw new Exception($"Nombre de etiqueta inválido: '{label}'");
                 }
@@ -172,7 +135,7 @@ namespace PixelW
             }
             catch (Exception ex)
             {
-                result.Errors.Add(new ErrorInfo
+                result?.Errors.Add(new ErrorInfo
                 {
                     LineNumber = lineNumber,
                     Message = ex.Message,
@@ -230,141 +193,28 @@ namespace PixelW
 
             return result;
         }
-        private void ParseGoTo(string line, ParseResult result=null)
+        private void ParseGoTo(string line, ParseResult result = null)
         {
             try
             {
-                // Elimina espacios innecesarios y verifica formato básico
-                line = line.Trim();
-                if (!line.StartsWith("GoTo", StringComparison.OrdinalIgnoreCase))
-                    throw new Exception("Formato incorrecto: debe comenzar con 'GoTo'");
+                // Extracción más robusta de la etiqueta y condición
+                var match = Regex.Match(line,
+                    @"GoTo\s*\[\s*([a-zA-Z][a-zA-Z0-9_-]*)\s*\]\s*\(\s*(.*)\s*\)",
+                    RegexOptions.IgnoreCase);
 
-                // Usa expresiones regulares para mayor flexibilidad
-                var match = System.Text.RegularExpressions.Regex.Match(
-                    line,
-                    @"GoTo\s*\[([^\]]+)\]\s*\(([^)]+)\)",
-                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (!match.Success || match.Groups.Count != 3)
+                    throw new Exception("Formato incorrecto para GoTo. Uso: GoTo [etiqueta] (condición)");
 
-                if (!match.Success)
-                    throw new Exception("Formato incorrecto. Uso: GoTo [etiqueta] (condición)");
+                string label = match.Groups[1].Value;
+                string condition = match.Groups[2].Value;
 
-                string label = match.Groups[1].Value.Trim();
-                string condition = match.Groups[2].Value.Trim();
-
-                if (!_labels.ContainsKey(label))
+                if (!_labels.TryGetValue(label, out int targetLine))
                     throw new Exception($"Etiqueta no encontrada: '{label}'");
 
                 if (EvaluateBooleanExpression(condition))
-                    currentLineNumber = _labels[label];
-            }
-            catch(Exception ex)
-            {
-                if (result != null)
                 {
-                    result.Errors.Add(new ErrorInfo
-                    {
-                        LineNumber = currentLineNumber + 1,
-                        Message = ex.Message,
-                        Type = ErrorType.Syntactic,
-                        CodeSnippet = line
-                    });
-                }
-                else
-                {
-                    throw;
-                }
-            }
-        }
-
-        private bool EvaluateBooleanExpression(string expr)
-        {
-            expr = expr.Trim();
-            if (expr.Contains("||"))
-            {
-                var parts = expr.Split(new[] { "||" }, StringSplitOptions.RemoveEmptyEntries);
-                return EvaluateBooleanExpression(parts[0]) || EvaluateBooleanExpression(parts[1]);
-            }
-
-            if (expr.Contains("&&"))
-            {
-                var parts = expr.Split(new[] {"&&"},StringSplitOptions.RemoveEmptyEntries);
-                return EvaluateBooleanExpression(parts[0]) && EvaluateBooleanExpression(parts[1]);
-            }
-            string[] comparators = { "==", "<=", ">=", "<", ">" };
-            foreach (var c in comparators)
-            {
-                if (expr.Contains(c))
-                {
-                    var parts=expr.Split(new[] { c }, StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length != 2) continue;
-                    int left = EvaluateNumericExpression(parts[0].Trim());
-                    int right=EvaluateNumericExpression(parts[1].Trim());
-                    switch (c)
-                    {
-                        case "==": return left == right;
-                        case "!=": return left != right;
-                        case "<=": return left <= right;
-                        case ">=": return left >= right;
-                        case "<": return left < right;
-                        case ">": return left > right;
-                    }
-                }
-            }
-            if (_variables.Exists(expr))
-            {
-                var value = _variables.GetValue(expr);
-
-                if (value is bool boolValue)
-                {
-                    return boolValue;
-                }
-                throw new Exception($"La variable '{expr}' no es booleana (tiene valor {value} de tipo {value.GetType().Name})");
-            }
-            // Variables booleanas
-            if (expr == "true") return true;
-            if (expr == "false") return false;
-            if (_variables.Exists(expr)) return (bool)_variables.GetValue(expr);
-
-            throw new Exception($"Expresión booleana no válida: '{expr}'");
-        }
-
-        
-        private void ParseVariableAssignment(string line, ParseResult result=null)
-        {
-            try
-            {
-
-
-                var parts = line.Split(new[] { "<-" }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length != 2)
-                    throw new Exception("Sintaxis incorrecta para asignación. Uso: variable <- expresión");
-
-                string varName = parts[0].Trim();
-                string expression = parts[1].Trim();
-
-                if (!_variables.IsValidVariableName(varName))
-                    throw new Exception($"Nombre de variable inválido: '{varName}'");
-
-                try
-                {
-                    // Intenta evaluar como expresión numérica primero
-                    object value;
-                    if (expression.Contains("&&") || expression.Contains("||") ||
-                        expression.Contains("==") || expression.Contains("!=") ||
-                        expression == "true" || expression == "false")
-                    {
-                        value = EvaluateBooleanExpression(expression);
-                    }
-                    else
-                    {
-                        value = EvaluateNumericExpression(expression);
-                    }
-
-                    _variables.Assign(varName, value);
-                }
-                catch
-                {
-                    throw new Exception($"No se pudo evaluar la expresión: '{expression}'");
+                    // Ajustamos para que en la próxima iteración se ejecute la línea destino
+                    currentLineNumber = targetLine - 1; // -1 porque después se incrementa
                 }
             }
             catch (Exception ex)
@@ -383,6 +233,183 @@ namespace PixelW
             }
         }
 
+        private bool EvaluateBooleanExpression(string expr)
+        {
+            expr = expr.Trim();
+
+            // Manejo de paréntesis primero
+            while (expr.Contains("(") && expr.Contains(")"))
+            {
+                int lastOpen = expr.LastIndexOf('(');
+                int close = expr.IndexOf(')', lastOpen);
+
+                if (close == -1)
+                    throw new Exception("Paréntesis no balanceados");
+
+                string innerExpr = expr.Substring(lastOpen + 1, close - lastOpen - 1);
+                bool innerResult = EvaluateBooleanExpression(innerExpr);
+                expr = expr.Remove(lastOpen, close - lastOpen + 1)
+                          .Insert(lastOpen, innerResult ? "1" : "0");
+            }
+
+            // Operadores lógicos con precedencia correcta
+            string[] boolOperators = { "||", "&&" };
+            foreach (var op in boolOperators)
+            {
+                if (expr.Contains(op))
+                {
+                    var parts = expr.Split(new[] { op }, StringSplitOptions.None);
+                    bool left = EvaluateBooleanExpression(parts[0]);
+                    bool right = EvaluateBooleanExpression(parts[1]);
+
+                    return op == "||" ? left || right : left && right;
+                }
+            }
+
+            // Operadores de comparación
+            string[] comparators = { "==", "!=", "<=", ">=", "<", ">" };
+            foreach (var comp in comparators)
+            {
+                if (expr.Contains(comp))
+                {
+                    var parts = expr.Split(new[] { comp }, StringSplitOptions.None);
+                    int left = EvaluateNumericExpression(parts[0]);
+                    int right = EvaluateNumericExpression(parts[1]);
+
+                    switch (comp)
+                    {
+                        case "==": return left == right;
+                        case "!=": return left != right;
+                        case "<=": return left <= right;
+                        case ">=": return left >= right;
+                        case "<": return left < right;
+                        case ">": return left > right;
+                    }
+                }
+            }
+
+            // Valores directos
+            if (expr == "1" || expr.Equals("true", StringComparison.OrdinalIgnoreCase)) return true;
+            if (expr == "0" || expr.Equals("false", StringComparison.OrdinalIgnoreCase)) return false;
+
+            // Variables
+            if (_variables.Exists(expr))
+            {
+                object value = _variables.GetValue(expr);
+                if (value is bool b) return b;
+                if (value is int i) return i != 0;
+                if (value is string s) return s.Equals("true", StringComparison.OrdinalIgnoreCase);
+            }
+
+            throw new Exception($"No se pudo evaluar la expresión: '{expr}'");
+        }
+
+
+        private void ParseVariableAssignment(string line, ParseResult result = null)
+        {
+            try
+            {
+                var parts = line.Split(new[] { "<-" }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length != 2)
+                    throw new Exception("Sintaxis incorrecta para asignación. Uso: variable <- expresión");
+
+                string varName = parts[0].Trim();
+                string expression = parts[1].Trim();
+
+                if (!_variables.IsValidVariableName(varName))
+                    throw new Exception($"Nombre de variable inválido: '{varName}'");
+
+                try
+                {
+                    // Primero verificar si es una llamada a función
+                    if (expression.StartsWith("GetActualX()") ||
+                        expression.StartsWith("GetActualY()") ||
+                        expression.StartsWith("GetCanvasSize()") ||
+                        expression.StartsWith("IsBrushColor("))
+                    {
+                        // Usar ParseFunctionCall para evaluar funciones
+                        int funcValue = ParseFunctionCall(expression);
+                        _variables.Assign(varName, funcValue);
+                    }
+                    else
+                    {
+                        // Evaluar como expresión normal
+                        object value;
+                        if (expression.Contains("&&") || expression.Contains("||") ||
+                            expression.Contains("==") || expression.Contains("!=") ||
+                            expression == "true" || expression == "false")
+                        {
+                            value = EvaluateBooleanExpression(expression);
+                        }
+                        else
+                        {
+                            value = EvaluateNumericExpression(expression);
+                        }
+                        _variables.Assign(varName, value);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"No se pudo evaluar la expresión: '{expression}'. Error: {ex.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                if (result != null)
+                {
+                    result.Errors.Add(new ErrorInfo
+                    {
+                        LineNumber = currentLineNumber + 1,
+                        Message = ex.Message,
+                        Type = ErrorType.Runtime,
+                        CodeSnippet = line
+                    });
+                }
+                else throw;
+            }
+        }
+
+        private void ProcessLabel(string line, ParseResult result)
+        {
+            string labelName = line.Trim();
+
+            if (!Regex.IsMatch(labelName, @"^[a-zA-Z][a-zA-Z0-9_-]*$"))
+            {
+                throw new Exception($"Nombre de etiqueta inválido: '{labelName}'");
+            }
+
+            if (_labels.ContainsKey(labelName))
+            {
+                throw new Exception($"Etiqueta duplicada: '{labelName}'");
+            }
+
+            _labels[labelName] = currentLineNumber;
+        }
+        private int ParseFunctionCall(string line)
+        {
+            if (line.StartsWith("GetActualX()")) return _robot.GetActualX();
+            if (line.StartsWith("GetActualY()")) return _robot.GetActualY();
+            if (line.StartsWith("GetCanvasSize()")) return _robot.GetCanvasSize();
+            if (line.StartsWith("IsBrushColor("))
+            {
+                // Extrae todo el contenido dentro de los paréntesis
+                int start = line.IndexOf('(') + 1;
+                int end = line.LastIndexOf(')');
+                if (start < 0 || end <= start)
+                    throw new Exception($"Sintaxis incorrecta en IsBrushColor: {line}");
+
+                string paramContent = line.Substring(start, end - start).Trim();
+
+                // Maneja comillas y espacios
+                string colorName = paramContent.Trim('"', '\'', ' ');
+
+                if (string.IsNullOrWhiteSpace(colorName))
+                    throw new Exception("Nombre de color no puede estar vacío");
+
+                return _robot.IsBrushColor(colorName);
+            }
+            throw new Exception($"Función no reconocida: {line}");
+        }
         private int EvaluateNumericExpression(string expression)
         {
             expression = HandleParentheses(expression);
@@ -516,9 +543,9 @@ namespace PixelW
         {
             try
             {
-                if (line.EndsWith(":"))
+                if (IsValidLabelName(line) && !line.Contains(" ") && !line.Contains("("))
                 {
-                    ParseLabel(line, result);
+                    _labels[line] = currentLineNumber;
                     return;
                 }
                 if (line.StartsWith("Spawn("))
@@ -554,14 +581,15 @@ namespace PixelW
                 {
                     ParseSizeCommand(line, result);
                 }
-                else if (line.StartsWith("DrawCircle("))
-                {
-                    ParseDrawCircleCommand(line, result);
-                }
                 else if (line.StartsWith("DrawRectangle("))
                 {
                     ParseDrawRectangleCommand(line, result);
                 }
+                else if (line.StartsWith("DrawCircle("))
+                {
+                    ParseDrawCircleCommand(line, result);
+                }
+               
                 else if (line.StartsWith("Fill(") || line.Trim() == "Fill")
                 {
                     _robot.Fill();
