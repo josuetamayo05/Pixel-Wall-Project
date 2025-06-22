@@ -60,6 +60,7 @@ namespace PixelW
 
 
         }
+        
         private void txtEditor_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Mostrar autocompletado cuando se escriba '(' o '['

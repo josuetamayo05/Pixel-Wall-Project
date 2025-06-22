@@ -25,7 +25,6 @@ namespace PixelW
             var newCanvas = new Canvas(canvas.Size);
             newCanvas.ZoomLevel = canvas._zoomLevel;
 
-            // Copiar todos los píxeles
             for (int x = 0; x < canvas.Size; x++)
             {
                 for (int y = 0; y < canvas.Size; y++)
@@ -36,7 +35,7 @@ namespace PixelW
 
             return newCanvas;
         }
-        public void Spawn(int x, int y)//coloca al wall en la posicion x,y del canvas
+        public void Spawn(int x, int y)
         {
             if (x < 0 || x >= canvas.Size || y < 0 || y >= canvas.Size)
                 throw new ArgumentException("Posición fuera de los límites");
@@ -111,36 +110,26 @@ namespace PixelW
         }
         public void DrawRectangle(int dirX, int dirY, int distance, int width, int height)
         {
-            // Validar dirección (debe ser -1, 0 o 1)
             if (Math.Abs(dirX) > 1 || Math.Abs(dirY) > 1)
                 throw new Exception("Las direcciones deben ser -1, 0 o 1");
 
-            // Calcular posición central
             int centerX = X + dirX * distance;
             int centerY = Y + dirY * distance;
 
-            // Calcular esquinas del rectángulo
             int startX = centerX - width / 2;
             int startY = centerY - height / 2;
             int endX = centerX + width / 2;
             int endY = centerY + height / 2;
 
-            // Validar bordes
-            if (!canvas.IsWithinBounds(startX, startY) || !canvas.IsWithinBounds(endX, endY))
-                throw new Exception("El rectángulo excede los límites del canvas");
+            DrawHorizontalLine(startX, endX, startY); 
+            DrawHorizontalLine(startX, endX, endY);   
+            DrawVerticalLine(startY, endY, startX);   
+            DrawVerticalLine(startY, endY, endX);     
 
-            // Dibujar los 4 lados
-            DrawHorizontalLine(startX, endX, startY); // Lado superior
-            DrawHorizontalLine(startX, endX, endY);   // Lado inferior
-            DrawVerticalLine(startY, endY, startX);   // Lado izquierdo
-            DrawVerticalLine(startY, endY, endX);     // Lado derecho
-
-            // Mover Wall-E al centro del rectángulo (opcional, según especificación)
             X = centerX;
             Y = centerY;
         }
 
-        // Métodos auxiliares (mantener los existentes)
         private void DrawHorizontalLine(int x1, int x2, int y)
         {
             for (int x = Math.Min(x1, x2); x <= Math.Max(x1, x2); x++)
@@ -148,7 +137,6 @@ namespace PixelW
                 canvas.DrawPixel(x, y, CurrentColor, BrushSize);
             }
         }
-
         private void DrawVerticalLine(int y1, int y2, int x)
         {
             for (int y = Math.Min(y1, y2); y <= Math.Max(y1, y2); y++)
@@ -156,23 +144,25 @@ namespace PixelW
                 canvas.DrawPixel(x, y, CurrentColor, BrushSize);
             }
         }
+        private void SafeDrawPixel(int x, int y)
+        {
+            if (canvas.IsWithinBounds(x, y) && CurrentColor != Color.Transparent)
+            {
+                canvas.DrawPixel(x, y, CurrentColor, BrushSize);
+            }
+        }
+        
 
         public void DrawLine(int dirX, int dirY, int distance)
         {
+            if (!canvas.IsWithinBounds(X, Y))
+                throw new Exception($"Posición inicial ({X}, {Y}) fuera del canvas");
+
             for (int i = 0; i < distance; i++)
             {
                 X += dirX;
                 Y += dirY;
-
-                // Verificar límites antes de dibujar
-                if (canvas.IsWithinBounds(X, Y) && CurrentColor != Color.Transparent)
-                {
-                    canvas.DrawPixel(X, Y, CurrentColor, BrushSize);
-                }
-                else if (!canvas.IsWithinBounds(X, Y))
-                {
-                    throw new Exception($"Posición ({X}, {Y}) fuera de los límites del canvas");
-                }
+                SafeDrawPixel(X, Y);
             }
         }
 
@@ -181,14 +171,6 @@ namespace PixelW
             int centerX = X + dirX;
             int centerY = Y + dirY;
 
-            // Validar bordes del canvas
-            if (!canvas.IsWithinBounds(centerX - radius, centerY - radius) ||
-                !canvas.IsWithinBounds(centerX + radius, centerY + radius))
-            {
-                throw new Exception("El círculo excede los límites del canvas");
-            }
-
-            // Algoritmo mejorado de Bresenham para círculos
             int x = 0;
             int y = radius;
             int d = 3 - 2 * radius;
@@ -212,46 +194,22 @@ namespace PixelW
                 DrawCirclePoints(centerX, centerY, x, y);
             }
 
-            // Mover Wall-E al centro del círculo
             X = centerX;
             Y = centerY;
         }
 
         private void DrawCirclePoints(int cx, int cy, int x, int y)
         {
-            // Dibuja los 8 puntos simétricos con manejo de grosor
-            if (BrushSize == 1)
-            {
-                // Versión precisa para pincel delgado
-                canvas.DrawPixel(cx + x, cy + y, CurrentColor);
-                canvas.DrawPixel(cx - x, cy + y, CurrentColor);
-                canvas.DrawPixel(cx + x, cy - y, CurrentColor);
-                canvas.DrawPixel(cx - x, cy - y, CurrentColor);
-                canvas.DrawPixel(cx + y, cy + x, CurrentColor);
-                canvas.DrawPixel(cx - y, cy + x, CurrentColor);
-                canvas.DrawPixel(cx + y, cy - x, CurrentColor);
-                canvas.DrawPixel(cx - y, cy - x, CurrentColor);
-            }
-            else
-            {
-                // Versión para pincel grueso (dibuja pequeños cuadrados)
-                int halfSize = BrushSize / 2;
-                for (int i = -halfSize; i <= halfSize; i++)
-                {
-                    for (int j = -halfSize; j <= halfSize; j++)
-                    {
-                        canvas.DrawPixel(cx + x + i, cy + y + j, CurrentColor, 1);
-                        canvas.DrawPixel(cx - x + i, cy + y + j, CurrentColor, 1);
-                        canvas.DrawPixel(cx + x + i, cy - y + j, CurrentColor, 1);
-                        canvas.DrawPixel(cx - x + i, cy - y + j, CurrentColor, 1);
-                        canvas.DrawPixel(cx + y + i, cy + x + j, CurrentColor, 1);
-                        canvas.DrawPixel(cx - y + i, cy + x + j, CurrentColor, 1);
-                        canvas.DrawPixel(cx + y + i, cy - x + j, CurrentColor, 1);
-                        canvas.DrawPixel(cx - y + i, cy - x + j, CurrentColor, 1);
-                    }
-                }
-            }
+            SafeDrawPixel(cx + x, cy + y);
+            SafeDrawPixel(cx - x, cy + y);
+            SafeDrawPixel(cx + x, cy - y);
+            SafeDrawPixel(cx - x, cy - y);
+            SafeDrawPixel(cx + y, cy + x);
+            SafeDrawPixel(cx - y, cy + x);
+            SafeDrawPixel(cx + y, cy - x);
+            SafeDrawPixel(cx - y, cy - x);
         }
+        
 
         public int GetColorCount(string colorName, int x1, int y1, int x2, int y2)
         {

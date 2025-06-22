@@ -52,14 +52,12 @@ namespace PixelW
             // Primer carácter debe ser letra
             if (!char.IsLetter(name[0])) return false;
 
-            // Caracteres permitidos: letras, números, guiones bajos
             foreach (char c in name)
             {
                 if (!char.IsLetterOrDigit(c) && c != '_')
                     return false;
             }
 
-            // Palabras reservadas (opcional)
             string[] reserved = { "and", "or", "not", "true", "false" };
             if (reserved.Contains(name.ToLower())) return false;
 
