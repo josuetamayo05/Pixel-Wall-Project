@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO;
 
 
 namespace PixelW
@@ -18,7 +19,7 @@ namespace PixelW
         private Canvas canvas;
         private WallE robot;
         private CommandParser parser;
-        private const int InitialCanvasSize = 32; // Renombramos la constante
+        private const int InitialCanvasSize = 86; 
         private StatusStrip statusStrip;
         private ToolStripStatusLabel statusLabel;
         private Button btnZoomIn;
@@ -31,7 +32,7 @@ namespace PixelW
             variableManager = new VariableManager();
             canvas = new Canvas(InitialCanvasSize);
             canvas.ZoomLevel = 8;
-            UpdateCanvas();
+            AdjustZoomToFit();
             robot = new WallE(canvas);
             parser = new CommandParser(robot, variableManager);
 
@@ -40,7 +41,6 @@ namespace PixelW
             statusStrip.Items.Add(statusLabel);
             this.Controls.Add(statusStrip);
 
-            // Habilita eventos de teclado y mouse
             this.KeyPreview = true;
             picCanvas.MouseMove += PicCanvas_MouseMove;
             picCanvas.MouseWheel += PicCanvas_MouseWheel;
@@ -52,7 +52,6 @@ namespace PixelW
             }
 
             SetupAutoComplete();
-            // Resto de la inicialización
             variableManager = new VariableManager();
             InitializeCanvas(InitialCanvasSize);
             picCanvas.SizeMode = PictureBoxSizeMode.Zoom;
@@ -63,17 +62,14 @@ namespace PixelW
         
         private void txtEditor_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Mostrar autocompletado cuando se escriba '(' o '['
             if (e.KeyChar == '|')
             {
                 ShowCompletionMenu();
 
-                // Opcional: prevenir que el caracter se duplique
                 e.Handled = true;
             }
 
-            // Puedes añadir más triggers según necesites
-            else if (e.KeyChar == 'C') // Ejemplo: al empezar a escribir "Color"
+            else if (e.KeyChar == 'C') 
             {
                 ShowCompletionMenuForPrefix("C");
                 e.Handled = true;
@@ -84,7 +80,6 @@ namespace PixelW
         {
             var menu = new ContextMenuStrip();
 
-            // Añade ítems al menú
             menu.Items.Add("Spawn(x, y)");
             menu.Items.Add("Color(\"Red\")");
             menu.Items.Add("DrawLine(dirX, dirY, distance)");
@@ -111,7 +106,6 @@ namespace PixelW
                 }
             };
 
-            // También puedes agregar el trigger para paréntesis
             txtEditor.KeyPress += (sender, e) =>
             {
                 if (e.KeyChar == '|')
@@ -124,7 +118,47 @@ namespace PixelW
 
         private void UpdateStatus()
         {
-            statusLabel.Text = $"Wall-E: [{robot.GetActualX()}, {robot.GetActualY()}] | Zoom: {canvas.ZoomLevel}x";
+            try
+            {
+                if (statusLabel == null || statusLabel.IsDisposed ||
+                    robot == null || canvas == null)
+                {
+                    return; 
+                }
+
+                int x = 0, y = 0;
+                try
+                {
+                    x = robot.GetActualX();
+                    y = robot.GetActualY();
+                }
+                catch
+                {
+                    x = -1;
+                    y = -1;
+                }
+
+                int zoomLevel = 1;
+                try
+                {
+                    zoomLevel = canvas.ZoomLevel;
+                }
+                catch
+                {
+                    zoomLevel = -1;
+                }
+
+                statusLabel.Text = $"Wall-E: [{x}, {y}] | Zoom: {zoomLevel}x";
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error en UpdateStatus: {ex.Message}");
+
+                if (statusLabel != null && !statusLabel.IsDisposed)
+                {
+                    statusLabel.Text = "Status: Error";
+                }
+            }
         }
 
         private void PicCanvas_MouseMove(object sender, MouseEventArgs e)
@@ -174,7 +208,6 @@ namespace PixelW
         {
             if (Control.ModifierKeys == Keys.Control)
             {
-                // Cambiar el incremento del zoom para mayor granularidad
                 int zoomChange = e.Delta > 0 ? 2 : -2;
                 canvas.ZoomLevel = Math.Max(Canvas.MinZoom, Math.Min(Canvas.MaxZoom, canvas.ZoomLevel + zoomChange));
                 UpdateCanvas();
@@ -234,15 +267,12 @@ namespace PixelW
         }
         private void InitializeApplication()
         {
-            // Configurar el editor y panel de números
             panelLineNumbers.AttachToEditor(txtEditor);
 
-            // Inicializar componentes de la aplicación
             variableManager = new VariableManager();
             InitializeCanvas(InitialCanvasSize);
             numCanvasSize.Value = InitialCanvasSize;
 
-            // Configurar eventos
             btnRun.Click += BtnRun_Click;
             btnResize.Click += BtnResize_Click;
         }
@@ -281,20 +311,16 @@ namespace PixelW
         }
         private void BtnRun_Click(object sender, EventArgs e)
         {
-            // Limpiar errores previos pero mantener el canvas
             variableManager = new VariableManager();
             parser = new CommandParser(robot, variableManager);
 
             var result = parser.Execute(txtEditor.Text);
 
-            // Siempre actualizar el canvas, independientemente de los errores
             UpdateCanvas();
 
             if (!result.Success)
             {
                 ShowErrors(result.Errors);
-                // Opcional: Restaurar posición/color original del robot
-                // pero mantener los cambios en el canvas
             }
         }
 
@@ -313,7 +339,6 @@ namespace PixelW
             }
             MessageBox.Show(errorMessage.ToString(), "Errores", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-            // Enfocar en el primer error
             if (errors.Count > 0)
             {
                 txtEditor.SelectionStart = txtEditor.GetFirstCharIndexFromLine(errors[0].LineNumber - 1);
@@ -336,24 +361,21 @@ namespace PixelW
             try
             {
                 int newSize = (int)numCanvasSize.Value;
-                if (newSize < 10 || newSize > 640) // Ajusta los límites según necesites
+                if (newSize < 10 || newSize > 640) 
                 {
                     MessageBox.Show("El tamaño debe estar entre 10 y 640", "Error",
                                   MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                // Liberar recursos de la imagen anterior
                 if (picCanvas.Image != null)
                 {
                     picCanvas.Image.Dispose();
                 }
 
-                // Crear nuevo canvas y robot
                 canvas = new Canvas(newSize);
                 robot = new WallE(canvas);
 
-                // Actualizar la visualización
                 picCanvas.Image = canvas.ToBitmap();
 
                 MessageBox.Show($"Canvas redimensionado a {newSize}x{newSize}", "Éxito",
@@ -427,24 +449,141 @@ namespace PixelW
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private void AdjustZoomToFit()
+        {
+            if (canvas == null) return;
 
+            int availableWidth = this.ClientSize.Width - txtEditor.Width - numCanvasSize.Width - 100;
+            int availableHeight = this.ClientSize.Height - 50;
+
+            int maxZoomX = availableWidth / canvas.Size;
+            int maxZoomY = availableHeight / canvas.Size;
+
+            canvas.ZoomLevel = Math.Max(Canvas.MinZoom, Math.Min(Math.Min(maxZoomX, maxZoomY), Canvas.MaxZoom));
+            UpdateCanvas();
+            UpdateStatus();
+        }
+
+        private void btnFitToWindow_Click(object sender, EventArgs e)
+        {
+            AdjustZoomToFit();
+        }
         private void InvalidateLayout()
         {
-            // Ajusta otros controles si es necesario
             panelLineNumbers.Invalidate();
             txtEditor.Invalidate();
         }
         private void UpdateCanvas()
         {
-            var oldImage = picCanvas.Image;
-            picCanvas.Image = canvas.ToBitmap();
+            try
+            {
+                if (canvas == null || picCanvas == null) return;
 
-            // Asegúrate que el PictureBox tenga el tamaño adecuado para el zoom
-            picCanvas.Size = new Size(
-                canvas.Size * canvas.ZoomLevel,
-                canvas.Size * canvas.ZoomLevel);
+                var oldImage = picCanvas.Image;
 
-            oldImage?.Dispose();
+                picCanvas.Image = canvas.ToBitmap();
+
+                int maxAvailableWidth = this.ClientSize.Width - txtEditor.Width - numCanvasSize.Width - 120;
+                int maxAvailableHeight = this.ClientSize.Height - 80;
+                // Calcular tamaño del canvas con zoom
+                int canvasDisplayWidth = canvas.Size * canvas.ZoomLevel;
+                int canvasDisplayHeight = canvas.Size * canvas.ZoomLevel;
+                // Determinar si necesitamos escalar
+                bool needsScaling = canvasDisplayWidth > maxAvailableWidth ||
+                                  canvasDisplayHeight > maxAvailableHeight;
+
+                if (needsScaling)
+                {
+                    // Calcular factor de escala
+                    double scaleFactor = Math.Min(
+                        (double)maxAvailableWidth / canvasDisplayWidth,
+                        (double)maxAvailableHeight / canvasDisplayHeight
+                    );
+
+                    canvasDisplayWidth = (int)(canvasDisplayWidth * scaleFactor);
+                    canvasDisplayHeight = (int)(canvasDisplayHeight * scaleFactor);
+                    // Usar modo Stretch para imágenes escaladas
+                    picCanvas.SizeMode = PictureBoxSizeMode.StretchImage;
+                }
+                else
+                {
+                    // Usar modo normal para tamaño original
+                    picCanvas.SizeMode = PictureBoxSizeMode.Normal;
+                }
+
+                // Aplicar el tamaño calculado
+                picCanvas.Size = new Size(canvasDisplayWidth, canvasDisplayHeight);
+
+                // Reposicionar el PictureBox para centrarlo
+                picCanvas.Location = new Point(
+                    txtEditor.Right + 40,
+                    Math.Max(20, (this.ClientSize.Height - canvasDisplayHeight) / 2)
+                );
+
+                // Liberar recursos de la imagen anterior
+                oldImage?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error en UpdateCanvas: {ex.Message}");
+            }
+        }
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            UpdateCanvas(); 
+
+            RepositionRightControls();
+        }
+        private void RepositionRightControls()
+        {
+            try
+            {
+                if (this.IsDisposed || numCanvasSize == null || btnResize == null ||
+                    btnRun == null || btnSave == null || btnTest == null ||
+                    btn_Load == null || btnZoomIn == null || btnZoomOut == null ||
+                    btnResetZoom == null || statusStrip == null)
+                {
+                    return;
+                }
+
+                int rightMargin = 20;
+                int controlWidth = 120;
+                int startY = 20;
+                int spacing = 10;
+
+                // Posición X común para todos los controles de la derecha
+                int rightX = this.ClientSize.Width - controlWidth - rightMargin;
+
+                // Reposicionar cada control con verificación de nulidad
+                SafeRepositionControl(numCanvasSize, rightX, startY);
+                SafeRepositionControl(btnResize, rightX, numCanvasSize.Bottom + spacing);
+                SafeRepositionControl(btnRun, rightX, btnResize.Bottom + spacing);
+                SafeRepositionControl(btnSave, rightX, btnRun.Bottom + spacing);
+                SafeRepositionControl(btnTest, rightX, btnSave.Bottom + spacing);
+                SafeRepositionControl(btn_Load, rightX, btnTest.Bottom + spacing);
+                SafeRepositionControl(btnZoomIn, rightX, btn_Load.Bottom + spacing);
+                SafeRepositionControl(btnZoomOut, rightX, btnZoomIn.Bottom + spacing);
+                SafeRepositionControl(btnResetZoom, rightX, btnZoomOut.Bottom + spacing);
+
+                // Actualizar statusStrip si existe
+                if (statusStrip != null && !statusStrip.IsDisposed)
+                {
+                    statusStrip.Width = this.ClientSize.Width;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error en RepositionRightControls: {ex.Message}");
+            }
+        }
+
+        private void SafeRepositionControl(Control control, int x, int y)
+        {
+            if (control != null && !control.IsDisposed)
+            {
+                control.Location = new Point(x, y);
+            }
         }
 
     }

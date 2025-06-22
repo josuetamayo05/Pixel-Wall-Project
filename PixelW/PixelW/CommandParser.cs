@@ -141,22 +141,18 @@ namespace PixelW
             if (string.IsNullOrWhiteSpace(name))
                 return false;
 
-            // No puede empezar con número ni guión
             if (char.IsDigit(name[0]) || name[0] == '-')
                 return false;
 
-            // Solo letras, números, guiones y guiones bajos
             return name.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '-');
         }
 
         private bool IsLabelLine(string line)
         {
-            // Verifica si es una etiqueta válida (no comando)
             return !string.IsNullOrWhiteSpace(line) &&
                    !line.StartsWith("Spawn(") &&
                    !line.StartsWith("Color(") &&
                    !line.StartsWith("GoTo") &&
-                   // ... otros comandos ...
                    Regex.IsMatch(line, @"^[a-zA-Z][a-zA-Z0-9_-]*$");
         }
         public ParseResult Execute(string code)
@@ -164,11 +160,10 @@ namespace PixelW
             var result = new ParseResult();
             var lines = code.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
-            // Guardar estado inicial del robot y canvas
             var originalPosition = new Point(_robot.X, _robot.Y);
             var originalColor = _robot.CurrentColor;
             var originalBrushSize = _robot.BrushSize;
-            var canvasSnapshot = _robot.Clone(); // Necesitarás implementar Clone() en Canvas
+            var canvasSnapshot = _robot.Clone(); 
 
             try
             {
@@ -209,7 +204,6 @@ namespace PixelW
 
                     ProcessLine(line, result);
 
-                    // Si hay errores acumulados, detener la ejecución
                     if (result.Errors.Count > 0)
                     {
                         result.Success = false;
@@ -230,7 +224,6 @@ namespace PixelW
             }
             finally
             {
-                // No hacemos rollback - los cambios se mantienen
             }
 
             return result;
@@ -273,10 +266,8 @@ namespace PixelW
         {
             expr = expr.Trim();
 
-            // Paso 1: Manejar paréntesis anidados
             expr = EvaluateParentheses(expr);
 
-            // Paso 2: Evaluar operadores lógicos con precedencia correcta
             string[] operators = { "&&", "||" };
             foreach (var op in operators)
             {
@@ -293,7 +284,6 @@ namespace PixelW
                 }
             }
 
-            // Paso 3: Evaluar comparaciones individuales
             return EvaluateSimpleComparison(expr);
         }
 
@@ -315,7 +305,6 @@ namespace PixelW
         }
         private bool EvaluateSimpleComparison(string expr)
         {
-            // Evaluar comparaciones simples (==, !=, <, >, etc.)
             string[] comparators = { "==", "!=", "<=", ">=", "<", ">" };
             foreach (var comp in comparators)
             {
@@ -339,11 +328,9 @@ namespace PixelW
                 }
             }
 
-            // Evaluar valores booleanos directos
             if (expr == "1" || expr.Equals("true", StringComparison.OrdinalIgnoreCase)) return true;
             if (expr == "0" || expr.Equals("false", StringComparison.OrdinalIgnoreCase)) return false;
 
-            // Evaluar variables
             if (_variables.Exists(expr))
             {
                 object value = _variables.GetValue(expr);
@@ -372,7 +359,6 @@ namespace PixelW
 
                 try
                 {
-                    // Primero verificar si es una llamada a función
                     if (expression.StartsWith("GetActualX()") ||
                         expression.StartsWith("GetActualY()") ||
                         expression.StartsWith("GetCanvasSize()") ||
@@ -381,13 +367,11 @@ namespace PixelW
                         expression.StartsWith("IsCanvasColor(")||
                         expression.StartsWith("GetColorCount"))
                     {
-                        // Usar ParseFunctionCall para evaluar funciones
                         int funcValue = ParseFunctionCall(expression);
                         _variables.Assign(varName, funcValue);
                     }
                     else
                     {
-                        // Evaluar como expresión normal
                         object value;
                         if (expression.Contains("&&") || expression.Contains("||") ||
                             expression.Contains("==") || expression.Contains("!=") ||
@@ -430,7 +414,6 @@ namespace PixelW
             if (line.StartsWith("GetCanvasSize()")) return _robot.GetCanvasSize();
             if (line.StartsWith("IsBrushColor("))
             {
-                // Extrae todo el contenido dentro de los paréntesis
                 int start = line.IndexOf('(') + 1;
                 int end = line.LastIndexOf(')');
                 if (start < 0 || end <= start)
@@ -438,7 +421,6 @@ namespace PixelW
 
                 string paramContent = line.Substring(start, end - start).Trim();
 
-                // Maneja comillas y espacios
                 string colorName = paramContent.Trim('"', '\'', ' ');
 
                 if (string.IsNullOrWhiteSpace(colorName))
@@ -519,14 +501,12 @@ namespace PixelW
             {
                 var result = _variables.GetValue(expression);
 
-                // Conversión segura con validación
                 if (result is int intValue)
                 {
                     return intValue;
                 }
                 throw new Exception($"La variable '{expression}' no es numérica (tiene valor {result} de tipo {result.GetType().Name})");
             }
-            // Si no hay operadores, es un literal o variable
             if (int.TryParse(expression, out int value)) return value;
             if (_variables.Exists(expression)) return (int)_variables.GetValue(expression);
 
@@ -549,8 +529,6 @@ namespace PixelW
 
         private bool IsValidVariableName(string name)
         {
-            // Implementar validación según especificaciones
-            // Debe contener solo letras, números y guiones, no empezar con número o guión
             return !string.IsNullOrEmpty(name) &&
                    !char.IsDigit(name[0]) &&
                    name.All(c => char.IsLetterOrDigit(c) || c == '-' || c=='_');
@@ -650,7 +628,6 @@ namespace PixelW
                 }
                 else if (line.StartsWith("//") || line.StartsWith("#"))
                 {
-                    // Comentario, ignorar
                     return;
                 }
                 else if (line.StartsWith("GetColorCount("))
@@ -712,7 +689,7 @@ namespace PixelW
                 }
                 else
                 {
-                    throw; // Mantiene el comportamiento original si no hay ParseResult
+                    throw; 
                 }
             }
         }

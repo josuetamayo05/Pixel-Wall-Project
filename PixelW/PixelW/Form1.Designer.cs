@@ -55,7 +55,7 @@ namespace PixelW
             // 
             // numCanvasSize
             // 
-            this.numCanvasSize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.numCanvasSize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             this.numCanvasSize.Location = new System.Drawing.Point(860, 12);
             this.numCanvasSize.Maximum = new decimal(new int[] {
             500,
@@ -68,9 +68,7 @@ namespace PixelW
             // 
             // picCanvas
             // 
-            this.picCanvas.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.picCanvas.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             this.picCanvas.BackColor = System.Drawing.Color.DarkGray;
             this.picCanvas.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.picCanvas.Location = new System.Drawing.Point(350, 12);
@@ -84,7 +82,7 @@ namespace PixelW
             // 
             // btnResize
             // 
-            this.btnResize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnResize.Anchor = AnchorStyles.Top | AnchorStyles.Right; 
             this.btnResize.Location = new System.Drawing.Point(860, 50);
             this.btnResize.Name = "btnResize";
             this.btnResize.Size = new System.Drawing.Size(120, 40);
@@ -95,7 +93,7 @@ namespace PixelW
             // 
             // btnRun
             // 
-            this.btnRun.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRun.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             this.btnRun.Location = new System.Drawing.Point(860, 100);
             this.btnRun.Name = "btnRun";
             this.btnRun.Size = new System.Drawing.Size(120, 40);
@@ -106,7 +104,7 @@ namespace PixelW
             // 
             // btnSave
             // 
-            this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSave.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             this.btnSave.Location = new System.Drawing.Point(860, 150);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(120, 40);
@@ -115,12 +113,12 @@ namespace PixelW
             this.btnSave.UseVisualStyleBackColor = true;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             //
-            
+
 
             // 
             // btnZoomIn
             // 
-            this.btnZoomIn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnZoomIn.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             this.btnZoomIn.Location = new System.Drawing.Point(860, 300); // Debajo del botón Load
             this.btnZoomIn.Name = "btnZoomIn";
             this.btnZoomIn.Size = new System.Drawing.Size(120, 30);
@@ -132,7 +130,7 @@ namespace PixelW
             // 
             // btnZoomOut
             // 
-            this.btnZoomOut.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnZoomOut.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             this.btnZoomOut.Location = new System.Drawing.Point(860, 335);
             this.btnZoomOut.Name = "btnZoomOut";
             this.btnZoomOut.Size = new System.Drawing.Size(120, 30);
@@ -144,7 +142,7 @@ namespace PixelW
             // 
             // btnResetZoom
             // 
-            this.btnResetZoom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnResetZoom.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             this.btnResetZoom.Location = new System.Drawing.Point(860, 370);
             this.btnResetZoom.Name = "btnResetZoom";
             this.btnResetZoom.Size = new System.Drawing.Size(120, 30);
@@ -155,7 +153,7 @@ namespace PixelW
             // 
             // btnTest
             // 
-            this.btnTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnTest.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             this.btnTest.Location = new System.Drawing.Point(860, 200);
             this.btnTest.Name = "btnTest";
             this.btnTest.Size = new System.Drawing.Size(120, 40);
@@ -165,7 +163,7 @@ namespace PixelW
             // 
             // btn_Load
             // 
-            this.btn_Load.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_Load.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             this.btn_Load.Location = new System.Drawing.Point(860, 250);
             this.btn_Load.Name = "btn_Load";
             this.btn_Load.Size = new System.Drawing.Size(120, 40);

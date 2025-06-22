@@ -240,7 +240,7 @@ namespace PixelW
             {
                 for (int y = startY; y <= endY; y++)
                 {
-                    if (canvas.IsWithinBounds(x, y)) // Doble verificación por seguridad
+                    if (canvas.IsWithinBounds(x, y)) 
             {
                         if (targetColor == Color.Transparent)
                         {
