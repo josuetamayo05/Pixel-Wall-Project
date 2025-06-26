@@ -329,7 +329,7 @@ namespace PixelW
             if (errors.Count == 0) return;
             txtEditor.SelectAll();
             txtEditor.SelectionBackColor = Color.White;
-            var errorMessage = new StringBuilder(); 
+            var errorMessage = new StringBuilder("Se encontraron múltiples errores:\n\n"); 
             foreach(var error in errors)
             {
                 HighlightErrorLine(error.LineNumber);

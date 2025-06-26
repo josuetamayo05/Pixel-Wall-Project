@@ -141,6 +141,46 @@ namespace PixelW
 
             return name.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '-');
         }
+        public ParseResult Execute(string code)
+        {
+            var result = new ParseResult();
+            var lines = code.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+            _labels.Clear();
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i].Trim();
+                if (IsLabelLine(line))
+                {
+                    string labelName = line;
+                    if (_labels.ContainsKey(labelName))
+                    {
+                        result.Errors.Add(new ErrorInfo
+                        {
+                            LineNumber = i + 1,
+                            Message = $"Etiqueta duplicada: '{labelName}'",
+                            Type = ErrorType.Semantic,
+                            CodeSnippet = line
+                        });
+                    }
+                    else
+                    {
+                        _labels[labelName] = i;
+                    }
+                }
+            }
+
+            for (currentLineNumber = 0; currentLineNumber < lines.Length; currentLineNumber++)
+            {
+                string line = lines[currentLineNumber].Trim();
+                if (string.IsNullOrWhiteSpace(line) || IsLabelLine(line)) continue;
+
+                ProcessLine(line, result); 
+            }
+
+            result.Success = result.Errors.Count == 0; 
+            return result;
+        }
 
         private bool IsLabelLine(string line)
         {
@@ -150,78 +190,7 @@ namespace PixelW
                    !line.StartsWith("GoTo") &&
                    Regex.IsMatch(line, @"^[a-zA-Z][a-zA-Z0-9_-]*$");
         }
-        public ParseResult Execute(string code)
-        {
-            var result = new ParseResult();
-            var lines = code.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            var originalPosition = new Point(_robot.X, _robot.Y);
-            var originalColor = _robot.CurrentColor;
-            var originalBrushSize = _robot.BrushSize;
-            var canvasSnapshot = _robot.Clone(); 
-
-            try
-            {
-                _labels.Clear();
-                for (int i = 0; i < lines.Length; i++)
-                {
-                    string line = lines[i].Trim();
-                    if (IsLabelLine(line))
-                    {
-                        string labelName = line; 
-                        if(_labels.ContainsKey(labelName))
-                        {
-                            result.Errors.Add(new ErrorInfo
-                            {
-                                LineNumber = i + 1,
-                                Message = $"Etiqueta duplicada: '{labelName}'",
-                                Type = ErrorType.Semantic,
-                                CodeSnippet = line
-                            });
-                        }
-                        else
-                        {
-                            _labels[labelName] = i;
-                        }
-                    }
-                    
-                }
-                if (result.Errors.Count > 0)
-                {
-                    result.Success = false;
-                    return result;
-                }
-
-                for (currentLineNumber = 0; currentLineNumber < lines.Length; currentLineNumber++)
-                {
-                    string line = lines[currentLineNumber].Trim();
-                    if (string.IsNullOrWhiteSpace(line)) continue;
-
-                    ProcessLine(line, result);
-
-                    if (result.Errors.Count > 0)
-                    {
-                        result.Success = false;
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                result.Errors.Add(new ErrorInfo
-                {
-                    LineNumber = currentLineNumber + 1,
-                    Message = ex.Message,
-                    Type = ErrorType.Runtime,
-                    CodeSnippet = lines[currentLineNumber]
-                });
-                result.Success = false;
-            }
-            finally
-            {
-            }
-
-            return result;
-        }
+        
         private void ParseGoTo(string line, ParseResult result = null)
         {
             try
@@ -669,10 +638,7 @@ namespace PixelW
                         CodeSnippet = line
                     });
                 }
-                else
-                {
-                    throw; 
-                }
+                
             }
         }
         private void ParseDrawRectangleCommand(string line, ParseResult result=null)
@@ -764,7 +730,7 @@ namespace PixelW
                     throw;
                 }
             }
-        }
+        }   
 
         private void ParseColorCommand(string line, ParseResult result = null)
         {
