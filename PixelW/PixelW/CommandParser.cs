@@ -48,7 +48,7 @@ namespace PixelW
             Runtime
         }
 
-        public Dictionary<string, int> _labels = new Dictionary<string, int>(); // Guarda línea de cada etiqueta
+        public Dictionary<string, int> _labels = new Dictionary<string, int>(); 
 
         
         private void ValidateSyntax(string line, int lineNumber,ParseResult result)
