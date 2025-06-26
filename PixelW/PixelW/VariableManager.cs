@@ -49,7 +49,7 @@ namespace PixelW
         {
             if (string.IsNullOrWhiteSpace(name)) return false;
 
-            // Primer carácter debe ser letra
+            // 1e carácter debe ser letra
             if (!char.IsLetter(name[0])) return false;
 
             foreach (char c in name)

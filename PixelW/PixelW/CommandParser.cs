@@ -51,12 +51,8 @@ namespace PixelW
         public Dictionary<string, int> _labels = new Dictionary<string, int>(); // Guarda línea de cada etiqueta
 
         
-
-        
-
         private void ValidateSyntax(string line, int lineNumber,ParseResult result)
         {
-            // Verificar paréntesis balanceados
             if (line.Count(c => c == '(') != line.Count(c => c == ')'))
             {
                 result.Errors.Add(new ErrorInfo
@@ -68,7 +64,6 @@ namespace PixelW
                 });
             }
 
-            // Verificar estructura básica de comandos
             if (line.StartsWith("Spawn") && !line.Contains(","))
             {
                 result.Errors.Add(new ErrorInfo
@@ -159,7 +154,6 @@ namespace PixelW
         {
             var result = new ParseResult();
             var lines = code.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-
             var originalPosition = new Point(_robot.X, _robot.Y);
             var originalColor = _robot.CurrentColor;
             var originalBrushSize = _robot.BrushSize;
@@ -271,16 +265,15 @@ namespace PixelW
             string[] operators = { "&&", "||" };
             foreach (var op in operators)
             {
-                int opIndex;
-                while ((opIndex = expr.LastIndexOf(op)) > 0)
+                if (expr.Contains(op))
                 {
-                    string leftPart = expr.Substring(0, opIndex).Trim();
-                    string rightPart = expr.Substring(opIndex + op.Length).Trim();
-
-                    bool left = EvaluateBooleanExpression(leftPart);
-                    bool right = EvaluateBooleanExpression(rightPart);
-
-                    return op == "&&" ? left && right : left || right;
+                    var parts = expr.Split(new[] { op }, StringSplitOptions.None);
+                    if (parts.Length == 2)
+                    {
+                        bool left = EvaluateBooleanExpression(parts[0]);
+                        bool right = EvaluateBooleanExpression(parts[1]);
+                        return op == "&&" ? left && right : left || right;
+                    }
                 }
             }
 
@@ -328,18 +321,7 @@ namespace PixelW
                 }
             }
 
-            if (expr == "1" || expr.Equals("true", StringComparison.OrdinalIgnoreCase)) return true;
-            if (expr == "0" || expr.Equals("false", StringComparison.OrdinalIgnoreCase)) return false;
-
-            if (_variables.Exists(expr))
-            {
-                object value = _variables.GetValue(expr);
-                if (value is bool b) return b;
-                if (value is int i) return i != 0;
-                if (value is string s) return s.Equals("true", StringComparison.OrdinalIgnoreCase);
-            }
-
-            throw new Exception($"No se pudo evaluar la expresión: '{expr}'");
+            return EvaluateNumericExpression(expr) != 0;
         }
 
 
@@ -431,25 +413,25 @@ namespace PixelW
             if (line.StartsWith("IsBrushSize("))
             {
                 var parts = line.TrimEnd(')').Split('(')[1].Split(',');
-                int size = int.Parse(parts[0].Trim());
+                int size = EvaluateParameter(parts[0].Trim());
                 return _robot.IsBrushSize(size);
             }
             if (line.StartsWith("IsCanvasColor("))
             {
                 var parts = line.TrimEnd(')').Split('(')[1].Split(',');
                 string colorName = parts[0].Trim('"', ' ', '\'');
-                int vertical = int.Parse(parts[1].Trim());
-                int horizontal = int.Parse(parts[2].Trim());
+                int vertical = EvaluateParameter(parts[1].Trim());
+                int horizontal = EvaluateParameter(parts[2].Trim());
                 return _robot.IsCanvasColor(colorName, vertical, horizontal);
             }
             if (line.StartsWith("GetColorCount("))
             {
                 var parts = line.TrimEnd(')').Split('(')[1].Split(',');
                 string colorName = parts[0].Trim('"', ' ', '\'');
-                int x1 = int.Parse(parts[1].Trim());
-                int y1 = int.Parse(parts[2].Trim());
-                int x2 = int.Parse(parts[3].Trim());
-                int y2 = int.Parse(parts[4].Trim());
+                int x1 = EvaluateParameter(parts[1].Trim());
+                int y1 = EvaluateParameter(parts[2].Trim());
+                int x2 = EvaluateParameter(parts[3].Trim());
+                int y2 = EvaluateParameter(parts[4].Trim());
                 return _robot.GetColorCount(colorName, x1, y1, x2, y2);
             }
 
@@ -545,10 +527,10 @@ namespace PixelW
                     throw new Exception("Sintaxis incorrecta para GetColorCount. Uso: GetColorCount(\"color\", x1, y1, x2, y2)");
 
                 string colorName = parts[0].Trim('"', ' ', '\'');
-                int x1 = int.Parse(parts[1].Trim());
-                int y1 = int.Parse(parts[2].Trim());
-                int x2 = int.Parse(parts[3].Trim());
-                int y2 = int.Parse(parts[4].Trim());
+                int x1 = EvaluateParameter(parts[1].Trim());
+                int y1 = EvaluateParameter(parts[2].Trim());
+                int x2 = EvaluateParameter(parts[3].Trim());
+                int y2 = EvaluateParameter(parts[4].Trim());
 
                 return _robot.GetColorCount(colorName, x1, y1, x2, y2);
             }
@@ -577,7 +559,7 @@ namespace PixelW
             {
                 var parts = line.TrimEnd(')').Split('(');
                 if (parts.Length != 2) throw new Exception("Sintaxis incorrecta para Size. Uso Size(3)");
-                int size = int.Parse(parts[1]);
+                int size = EvaluateParameter(parts[1]);
                 _robot.Size(size);
             }
             catch (Exception ex) {
@@ -701,11 +683,11 @@ namespace PixelW
                 if (parts.Length != 5)
                     throw new Exception("Sintaxis incorrecta para DrawRectangle. Uso: DrawRectangle(dirX, dirY, distance, width, height)");
 
-                int dirX = int.Parse(parts[0].Trim());
-                int dirY = int.Parse(parts[1].Trim());
-                int distance = int.Parse(parts[2].Trim());
-                int width = int.Parse(parts[3].Trim());
-                int height = int.Parse(parts[4].Trim());
+                int dirX = EvaluateParameter(parts[0].Trim());
+                int dirY = EvaluateParameter(parts[1].Trim());
+                int distance = EvaluateParameter(parts[2].Trim());
+                int width = EvaluateParameter(parts[3].Trim());
+                int height = EvaluateParameter(parts[4].Trim());
 
                 _robot.DrawRectangle(dirX, dirY, distance, width, height);
             }
@@ -730,9 +712,9 @@ namespace PixelW
                 if (parts.Length != 3)
                     throw new Exception("Sintaxis incorrecta para DrawCircle. Uso: DrawCircle(dirX, dirY, radio)");
 
-                int dirX = int.Parse(parts[0].Trim());
-                int dirY = int.Parse(parts[1].Trim());
-                int radius = int.Parse(parts[2].Trim());
+                int dirX = EvaluateParameter(parts[0].Trim());
+                int dirY = EvaluateParameter(parts[1].Trim());
+                int radius = EvaluateParameter(parts[2].Trim());
 
                 _robot.DrawCircle(dirX, dirY, radius);
             }
@@ -761,8 +743,8 @@ namespace PixelW
                     throw new Exception("Sintaxis incorrecta para Spawn. Uso: Spawn(x, y)");
                 }
 
-                int x = int.Parse(parts[1].Trim());
-                int y = int.Parse(parts[2].Trim());
+                int x = EvaluateParameter(parts[1].Trim());
+                int y = EvaluateParameter(parts[2].Trim());
                 _robot.Spawn(x, y);
             }
             catch (Exception ex)
@@ -823,9 +805,9 @@ namespace PixelW
                 if (parts.Length != 4)
                     throw new Exception("Sintaxis incorrecta para DrawLine. Uso: DrawLine(dirX, dirY, distancia)");
 
-                int dirX = int.Parse(parts[1].Trim());
-                int dirY = int.Parse(parts[2].Trim());
-                int distance = int.Parse(parts[3].Trim());
+                int dirX = EvaluateParameter(parts[1].Trim());
+                int dirY = EvaluateParameter(parts[2].Trim());
+                int distance = EvaluateParameter(parts[3].Trim());
 
                 if (Math.Abs(dirX) > 1 || Math.Abs(dirY) > 1)
                     throw new Exception("Las direcciones deben ser -1, 0 o 1");
@@ -846,6 +828,19 @@ namespace PixelW
                 }
                 else throw;
             }
+        }
+        private int EvaluateParameter(string param)
+        {
+            if (_variables.Exists(param))
+            {
+                var value = _variables.GetValue(param);
+                if (value is int intValue) return intValue;
+                throw new Exception($"La variable {param} no es numérica");
+            }
+
+            if (int.TryParse(param, out int result)) return result;
+
+            throw new Exception($"Parámetro no válido: {param}");
         }
     }
 }

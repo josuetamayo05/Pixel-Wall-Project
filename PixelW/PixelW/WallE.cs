@@ -213,11 +213,9 @@ namespace PixelW
 
         public int GetColorCount(string colorName, int x1, int y1, int x2, int y2)
         {
-            // Validar coordenadas primero
             if (!canvas.IsWithinBounds(x1, y1) || !canvas.IsWithinBounds(x2, y2))
                 return 0;
 
-            // Normalizar coordenadas (x1,y1 será esquina superior izquierda)
             int startX = Math.Min(x1, x2);
             int endX = Math.Max(x1, x2);
             int startY = Math.Min(y1, y2);
@@ -231,7 +229,7 @@ namespace PixelW
             else
             {
                 targetColor = Color.FromName(colorName);
-                if (targetColor.ToArgb() == 0) // Color.FromName devuelve ARGB=0 para nombres inválidos
+                if (targetColor.ToArgb() == 0) // FromName devuelve ARGB=0 para nombres inválidos
                     throw new Exception($"Color no válido: {colorName}");
             }
 
@@ -275,7 +273,7 @@ namespace PixelW
             BrushSize = k % 2 == 0 ? k - 1 : k;
         }
 
-        public void Fill() //rell espac conexos
+        public void Fill() 
         {
             if (CurrentColor == Color.Transparent)
                 throw new Exception("No se puede rellenar con color transparente");

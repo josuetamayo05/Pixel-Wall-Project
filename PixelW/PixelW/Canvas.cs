@@ -13,23 +13,7 @@ namespace PixelW
         public const int MaxZoom = 32;
         public const int MinZoom = 4;
 
-        public Canvas Clone()
-        {
-            var newCanvas = new Canvas(this.Size);
-            newCanvas.ZoomLevel = this.ZoomLevel;
-
-            // Copiar todos los píxeles
-            for (int x = 0; x < Size; x++)
-            {
-                for (int y = 0; y < Size; y++)
-                {
-                    newCanvas.pixels[x, y] = this.pixels[x, y];
-                }
-            }
-
-            return newCanvas;
-        }
-
+        
         public int ZoomLevel
         {
             get => _zoomLevel;
