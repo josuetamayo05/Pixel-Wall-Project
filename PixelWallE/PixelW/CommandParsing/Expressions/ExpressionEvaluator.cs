@@ -52,59 +52,79 @@ namespace PixelW.CommandParsing.Expressions
         }
         public int EvaluateNumericExpression(string expression)
         {
-            expression=expression.Trim();
-            expression = HandleParentheses(expression.Trim());
+            expression = expression.Trim();
+
+            // manejar paréntesis (solo si existen)
+            if (expression.Contains("(") && expression.Contains(")"))
+            {
+                expression = HandleParentheses(expression);
+            }
+
+            // manejar operadores unarios (-)
             if (expression.StartsWith("-"))
             {
-                return -EvaluateNumericExpression(expression.Substring(1).Trim());
+                return -EvaluateNumericExpression(expression.Substring(1));
             }
-            string[][] operatorsGroup = new string[][]
+
+            // eval operadores por precedencia
+            string[][] operatorGroups = new[]
             {
-                new[] { "**" },
-                new[] { "*","/","%" },
-                new[] {"+",""}
+                new[] { "+", "-" },    
+                new[] { "*", "/", "%" }, 
+                new[] { "**" }         
             };
-            foreach(var operators in operatorsGroup) 
+
+            // evaluar en orden de precedencia 
+            foreach (var operators in operatorGroups)
             {
+                // Buscar el operador más a la derecha para mantener asociatividad izquierda
                 int opIndex = -1;
                 string opFound = null;
-                foreach (var op in operators) 
+
+                for (int i = expression.Length - 1; i >= 0; i--)
                 {
-                    int currentIndex=expression.LastIndexOf(op);
-                    if (currentIndex > opIndex)
+                    foreach (var op in operators)
                     {
-                        opIndex = currentIndex;
-                        opFound = op;
-                    }
-                    if (opIndex > 0)
-                    {
-                        string leftPart = expression.Substring(0, opIndex).Trim();
-                        string rightPart = expression.Substring(opIndex + op.Length).Trim();
-
-                        int left = EvaluateNumericExpression(leftPart);
-                        int right = EvaluateNumericExpression(rightPart);
-
-                        switch (op)
+                        if (i >= op.Length - 1 && expression.Substring(i - op.Length + 1, op.Length) == op)
                         {
-                            case "**": return (int)Math.Pow(left, right);
-                            case "*": return left * right;
-                            case "/":
-                                if (right == 0) throw new Exception("No se puede dividir por cero");
-                                return left / right;
-                            case "%": return left % right;
-                            case "+": return left + right;
-                            case "-": return left - right;
+                            // Verificar que no es un operador unario
+                            bool isUnary = op == "-" && (i == 0 || "+-*/%(".Contains(expression[i - 1]));
+
+                            if (!isUnary)
+                            {
+                                opIndex = i - op.Length + 1;
+                                opFound = op;
+                                break;
+                            }
                         }
-                    }    
-                }      
+                    }
+                    if (opFound != null) break;
+                }
+
+                if (opIndex >= 0)
+                {
+                    string left = expression.Substring(0, opIndex).Trim();
+                    string right = expression.Substring(opIndex + opFound.Length).Trim();
+
+                    int leftVal = EvaluateNumericExpression(left);
+                    int rightVal = EvaluateNumericExpression(right);
+
+                    switch (opFound)
+                    {
+                        case "+": return leftVal + rightVal;
+                        case "-": return leftVal - rightVal;
+                        case "*": return leftVal * rightVal;
+                        case "/":
+                            if (rightVal == 0) throw new DivideByZeroException();
+                            return leftVal / rightVal;
+                        case "%": return leftVal % rightVal;
+                        case "**": return (int)Math.Pow(leftVal, rightVal);
+                    }
+                }
             }
 
             if (_variables.Exists(expression))
-            {
-                object value = _variables.GetValue(expression);
-                if (value is int) return (int)value;
-                throw new Exception($"La variable '{expression}' no es numérica");
-            }
+                return _variables.GetNumericValue(expression);
 
             if (int.TryParse(expression, out int literal)) return literal;
 
