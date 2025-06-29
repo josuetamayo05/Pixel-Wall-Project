@@ -52,41 +52,61 @@ namespace PixelW.CommandParsing.Expressions
         }
         public int EvaluateNumericExpression(string expression)
         {
+            expression=expression.Trim();
             expression = HandleParentheses(expression.Trim());
-            string[] operators = { "**", "*", "/", "%", "+", "-" };
-
-            foreach (string op in operators)
+            if (expression.StartsWith("-"))
             {
-                if (expression.Contains(op))
+                return -EvaluateNumericExpression(expression.Substring(1).Trim());
+            }
+            string[][] operatorsGroup = new string[][]
+            {
+                new[] { "**" },
+                new[] { "*","/","%" },
+                new[] {"+",""}
+            };
+            foreach(var operators in operatorsGroup) 
+            {
+                int opIndex = -1;
+                string opFound = null;
+                foreach (var op in operators) 
                 {
-                    var parts = expression.Split(new[] { op }, StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length != 2) continue;
-
-                    int left = EvaluateNumericExpression(parts[0].Trim());
-                    int right = EvaluateNumericExpression(parts[1].Trim());
-
-                    switch (op)
+                    int currentIndex=expression.LastIndexOf(op);
+                    if (currentIndex > opIndex)
                     {
-                        case "**": return (int)Math.Pow(left, right);
-                        case "*": return left * right;
-                        case "/":
-                            if (right == 0) throw new Exception("No se puede dividir por cero");
-                            return left / right;
-                        case "%": return left % right;
-                        case "+": return left + right;
-                        case "-": return left - right;
+                        opIndex = currentIndex;
+                        opFound = op;
                     }
-                }
+                    if (opIndex > 0)
+                    {
+                        string leftPart = expression.Substring(0, opIndex).Trim();
+                        string rightPart = expression.Substring(opIndex + op.Length).Trim();
+
+                        int left = EvaluateNumericExpression(leftPart);
+                        int right = EvaluateNumericExpression(rightPart);
+
+                        switch (op)
+                        {
+                            case "**": return (int)Math.Pow(left, right);
+                            case "*": return left * right;
+                            case "/":
+                                if (right == 0) throw new Exception("No se puede dividir por cero");
+                                return left / right;
+                            case "%": return left % right;
+                            case "+": return left + right;
+                            case "-": return left - right;
+                        }
+                    }    
+                }      
             }
 
             if (_variables.Exists(expression))
             {
-                var result = _variables.GetValue(expression);
-                if (result is int intValue) return intValue;
+                object value = _variables.GetValue(expression);
+                if (value is int) return (int)value;
                 throw new Exception($"La variable '{expression}' no es numérica");
             }
 
-            if (int.TryParse(expression, out int value)) return value;
+            if (int.TryParse(expression, out int literal)) return literal;
 
             throw new Exception($"Expresión numérica no válida: '{expression}'");
         }

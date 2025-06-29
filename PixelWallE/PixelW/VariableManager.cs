@@ -63,5 +63,20 @@ namespace PixelW
 
             return true;
         }
+        public int GetNumericValue(string varName)
+        {
+            if (numericVars.TryGetValue(varName, out int value))
+                return value;
+
+            throw new Exception($"Variable numérica no definida: '{varName}'");
+        }
+
+        public bool GetBooleanValue(string varName)
+        {
+            if (booleanVars.TryGetValue(varName, out bool value))
+                return value;
+
+            throw new Exception($"Variable booleana no definida: '{varName}'");
+        }
     }
 }

@@ -22,7 +22,7 @@ namespace PixelW.CommandParsing.Validation
 
             ValidateParentheses(line, lineNumber, result);
             ValidateSpawnCommand(line, lineNumber, result);
-            ValidateDrawCommands(line, lineNumber, result);
+            //ValidateDrawCommands(line, lineNumber, result);
             ValidateVariableAssignment(line, lineNumber, result);
             ValidateGoToCommand(line, lineNumber, result);
             ValidateFunctionCalls(line, lineNumber, result);
@@ -53,70 +53,70 @@ namespace PixelW.CommandParsing.Validation
 
         
 
-        private void ValidateDrawCommands(string line, int lineNumber, ParseResult result)
-        {
-            if (line.StartsWith("DrawLine("))
-            {
-                if (!IsValidParameterizedCommand(line, "DrawLine", 3))
-                {
-                    AddError(result, lineNumber,
-                            "Sintaxis incorrecta para DrawLine. Uso: DrawLine(dirX, dirY, distance)",
-                            ErrorType.Syntactic, line);
-                }
-            }
-            else if (line.StartsWith("DrawCircle("))
-            {
-                if (!IsValidParameterizedCommand(line, "DrawCircle", 3))
-                {
-                    AddError(result, lineNumber,
-                            "Sintaxis incorrecta para DrawCircle. Uso: DrawCircle(dirX, dirY, radius)",
-                            ErrorType.Syntactic, line);
-                }
-            }
-            else if (line.StartsWith("DrawRectangle("))
-            {
-                if (!IsValidParameterizedCommand(line, "DrawRectangle(", 3))
-                {
-                    AddError(result, lineNumber,
-                            "Sintaxis incorrecta para DrawRectangle. Uso: DrawCircle(dirX, dirY, radius)",
-                            ErrorType.Syntactic, line);
-                }
-            }
-        }
+        //private void ValidateDrawCommands(string line, int lineNumber, ParseResult result)
+        //{
+        //    if (line.StartsWith("DrawLine("))
+        //    {
+        //        if (!IsValidParameterizedCommand(line, "DrawLine", 3))
+        //        {
+        //            AddError(result, lineNumber,
+        //                    "Sintaxis incorrecta para DrawsssssssLine. Uso: DrawLine(dirX, dirY, distance)",
+        //                    ErrorType.Syntactic, line);
+        //        }
+        //    }
+        //    else if (line.StartsWith("DrawCircle("))
+        //    {
+        //        if (!IsValidParameterizedCommand(line, "DrawCircle", 3))
+        //        {
+        //            AddError(result, lineNumber,
+        //                    "Sintaxis incorrecta para DrawCircle. Uso: DrawCircle(dirX, dirY, radius)",
+        //                    ErrorType.Syntactic, line);
+        //        }
+        //    }
+        //    else if (line.StartsWith("DrawRectangle("))
+        //    {
+        //        if (!IsValidParameterizedCommand(line, "DrawRectangle(", 3))
+        //        {
+        //            AddError(result, lineNumber,
+        //                    "Sintaxis incorrecta para DrawRectangle. Uso: DrawCircle(dirX, dirY, radius)",
+        //                    ErrorType.Syntactic, line);
+        //        }
+        //    }
+        //}
 
-        private bool IsValidParameterizedCommand(string line, string command, int paramCount)
-        {
-            if (!line.EndsWith(")"))
-            {
-                return false;
-            }
+        //private bool IsValidParameterizedCommand(string line, string command, int paramCount)
+        //{
+        //    if (!line.EndsWith(")"))
+        //    {
+        //        return false;
+        //    }
 
-            int startIndex = line.IndexOf('(') + 1;
-            int length = line.Length - startIndex - 1;
-            string content = line.Substring(startIndex, length).Trim();
+        //    int startIndex = line.IndexOf('(') + 1;
+        //    int length = line.Length - startIndex - 1;
+        //    string content = line.Substring(startIndex, length).Trim();
 
-            string[] parameters = content.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                                         .Select(p => p.Trim())
-                                         .ToArray();
+        //    string[] parameters = content.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+        //                                 .Select(p => p.Trim())
+        //                                 .ToArray();
 
-            // Verifica que haya exactamente 'paramCount' parámetros
-            if (parameters.Length != paramCount)
-            {
-                return false;
-            }
+        //    // Verifica que haya exactamente 'paramCount' parámetros
+        //    if (parameters.Length != paramCount)
+        //    {
+        //        return false;
+        //    }
 
-            string paramPattern = @"^([a-zA-Z_][a-zA-Z0-9_]*|\d+|[-+*/%()\s]+)$";
+        //    string paramPattern = @"^([a-zA-Z_][a-zA-Z0-9_]*|\d+|[-+*/%()\s]+)$";
 
-            foreach (string param in parameters)
-            {
-                if (!Regex.IsMatch(param, paramPattern))
-                {
-                    return false;
-                }
-            }
+        //    foreach (string param in parameters)
+        //    {
+        //        if (!Regex.IsMatch(param, paramPattern))
+        //        {
+        //            return false;
+        //        }
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
 
         //////private void ValidateDrawCommands(string line, int lineNumber, ParseResult result)
         //////{
