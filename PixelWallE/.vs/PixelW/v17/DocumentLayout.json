@@ -3,24 +3,24 @@
   "WorkspaceRootPath": "C:\\Telegram\\WallPix Rep\\PixelWallE\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|c:\\telegram\\wallpix rep\\pixelwalle\\pixelw\\canvas.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\canvas.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|c:\\telegram\\wallpix rep\\pixelwalle\\pixelw\\variablemanag\\variablemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\variablemanag\\variablemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|c:\\telegram\\wallpix rep\\pixelwalle\\pixelw\\walle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\walle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Telegram\\WallPix Rep\\PixelWallE\\pixelw\\interpreter\\walle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\interpreter\\walle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|c:\\telegram\\wallpix rep\\pixelwalle\\pixelw\\commandparsing\\expressions\\expressionevaluator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Telegram\\WallPix Rep\\PixelWallE\\pixelw\\visualc\\canvas.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\visualc\\canvas.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Telegram\\WallPix Rep\\PixelWallE\\pixelw\\commandparsing\\expressions\\expressionevaluator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\commandparsing\\expressions\\expressionevaluator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Telegram\\WallPix Rep\\PixelWallE\\pixelw\\commandparsing\\command\\commandprocessor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:pixelw\\commandparsing\\command\\commandprocessor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\VariableManager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F326327C-861B-4AE8-931E-9310E3F69ECF}|PixelW\\PixelW.csproj|solutionrelative:PixelW\\VariableManager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,37 +30,35 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "Canvas.cs",
-              "DocumentMoniker": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\Canvas.cs",
-              "RelativeDocumentMoniker": "PixelW\\Canvas.cs",
-              "ToolTip": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\Canvas.cs",
-              "RelativeToolTip": "PixelW\\Canvas.cs",
-              "ViewState": "AgIAAD0AAAAAAAAAAAAuwE4AAAAJAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\VisualC\\Canvas.cs",
+              "RelativeDocumentMoniker": "PixelW\\VisualC\\Canvas.cs",
+              "ToolTip": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\VisualC\\Canvas.cs",
+              "RelativeToolTip": "PixelW\\VisualC\\Canvas.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAE4AAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-29T04:19:37.027Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-29T04:19:37.027Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "WallE.cs",
-              "DocumentMoniker": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\WallE.cs",
-              "RelativeDocumentMoniker": "PixelW\\WallE.cs",
-              "ToolTip": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\WallE.cs",
-              "RelativeToolTip": "PixelW\\WallE.cs",
-              "ViewState": "AgIAACEBAAAAAAAAAAA9wD8BAAAJAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\Interpreter\\WallE.cs",
+              "RelativeDocumentMoniker": "PixelW\\Interpreter\\WallE.cs",
+              "ToolTip": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\Interpreter\\WallE.cs",
+              "RelativeToolTip": "PixelW\\Interpreter\\WallE.cs",
+              "ViewState": "AgIAACIBAAAAAAAAAAAowD8BAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-29T03:54:39.638Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-29T03:54:39.638Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "ExpressionEvaluator.cs",
               "DocumentMoniker": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\CommandParsing\\Expressions\\ExpressionEvaluator.cs",
               "RelativeDocumentMoniker": "PixelW\\CommandParsing\\Expressions\\ExpressionEvaluator.cs",
@@ -68,12 +66,11 @@
               "RelativeToolTip": "PixelW\\CommandParsing\\Expressions\\ExpressionEvaluator.cs",
               "ViewState": "AgIAAGoAAAAAAAAAAAAAwIEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-28T16:38:44.526Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-28T16:38:44.526Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "CommandProcessor.cs",
               "DocumentMoniker": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\CommandParsing\\Command\\CommandProcessor.cs",
               "RelativeDocumentMoniker": "PixelW\\CommandParsing\\Command\\CommandProcessor.cs",
@@ -85,15 +82,16 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "VariableManager.cs",
-              "DocumentMoniker": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\VariableManager.cs",
-              "RelativeDocumentMoniker": "PixelW\\VariableManager.cs",
-              "ToolTip": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\VariableManager.cs",
-              "RelativeToolTip": "PixelW\\VariableManager.cs",
-              "ViewState": "AgIAADIAAAAAAAAAAAAwwE8AAAAJAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\VariableManag\\VariableManager.cs",
+              "RelativeDocumentMoniker": "PixelW\\VariableManag\\VariableManager.cs",
+              "ToolTip": "C:\\Telegram\\WallPix Rep\\PixelWallE\\PixelW\\VariableManag\\VariableManager.cs",
+              "RelativeToolTip": "PixelW\\VariableManag\\VariableManager.cs",
+              "ViewState": "AgIAADIAAAAAAAAAAAAwwEIAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-26T16:43:49.559Z"
+              "WhenOpened": "2025-04-26T16:43:49.559Z",
+              "EditorCaption": ""
             }
           ]
         },
