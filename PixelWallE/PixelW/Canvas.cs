@@ -24,7 +24,7 @@ namespace PixelW
         {
             Size = size;
             pixels = new Color[Size, Size];
-            Clear();//inicializa en blanco
+            Clear();
         }
 
         public void Clear()
@@ -55,27 +55,26 @@ namespace PixelW
                 for (int j = y - half; j <= y + half; j++)
                     if (IsWithinBounds(i, j)) pixels[i, j] = color;
         }
-        public void FloodFill(int x, int y, Color newColor)
+        public void FloodFill(int startX, int startY, Color targetColor, Color newColor)
         {
-            //rellena un area conexa del mismo color,
-            Color targetColor = pixels[x, y];
-            if (targetColor == newColor) return; //evit bucle inf
+            if (targetColor == newColor) return;
 
-            Stack<(int, int)> pixelsToFill = new Stack<(int, int)>(); // usar pila para evitar recursion
-            pixelsToFill.Push((x, y));
+            var queue = new Queue<(int x, int y)>();
+            queue.Enqueue((startX, startY));
 
-            while (pixelsToFill.Count > 0)
+            while (queue.Count > 0)
             {
-                var (currentX, currentY) = pixelsToFill.Pop();//elimina y devuelve la parte superior de la pila, extrae y elimina laparte sup de la pila
-                if (!IsWithinBounds(currentX, currentY) || pixels[currentX, currentY] != targetColor)
-                    continue;
+                var (x, y) = queue.Dequeue();
 
-                pixels[currentX, currentY] = newColor;
+                if (!IsWithinBounds(x, y))continue;
+                if (pixels[x, y] != targetColor) continue;
 
-                pixelsToFill.Push((currentX + 1, currentY));//agg pixel a la derecha
-                pixelsToFill.Push((currentX - 1, currentY));//izq
-                pixelsToFill.Push((currentX, currentY + 1));//abaj
-                pixelsToFill.Push((currentX, currentY - 1));//arr
+                pixels[x, y] = newColor;
+
+                queue.Enqueue((x + 1, y)); // der
+                queue.Enqueue((x - 1, y)); // izqa
+                queue.Enqueue((x, y + 1)); // abajo
+                queue.Enqueue((x, y - 1)); // arriba
             }
         }
 

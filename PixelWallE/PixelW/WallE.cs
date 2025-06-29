@@ -116,32 +116,52 @@ namespace PixelW
             int centerX = X + dirX * distance;
             int centerY = Y + dirY * distance;
 
-            int startX = centerX - width / 2;
-            int startY = centerY - height / 2;
-            int endX = centerX + width / 2;
-            int endY = centerY + height / 2;
+            int halfWidth = width / 2;
+            int halfHeight = height / 2;
 
-            DrawHorizontalLine(startX, endX, startY); 
-            DrawHorizontalLine(startX, endX, endY);   
-            DrawVerticalLine(startY, endY, startX);   
-            DrawVerticalLine(startY, endY, endX);     
+            int left = centerX - halfWidth;
+            int right = centerX + halfWidth;
+            int top = centerY - halfHeight;
+            int bottom = centerY + halfHeight;
+
+            // dbujar el rectángulo considerando el grosor del pincel
+            DrawRectangleLines(left, right, top, bottom);
 
             X = centerX;
             Y = centerY;
         }
 
-        private void DrawHorizontalLine(int x1, int x2, int y)
+        private void DrawRectangleLines(int left, int right, int top, int bottom)
         {
-            for (int x = Math.Min(x1, x2); x <= Math.Max(x1, x2); x++)
-            {
-                canvas.DrawPixel(x, y, CurrentColor, BrushSize);
-            }
+            DrawThickLine(left, right, top, top);    // Línea superior
+            DrawThickLine(left, right, bottom, bottom); // Línea inferior
+            DrawThickLine(left, left, top, bottom);  // Línea izquierda
+            DrawThickLine(right, right, top, bottom); // Línea derecha
         }
-        private void DrawVerticalLine(int y1, int y2, int x)
+
+        private void DrawThickLine(int x1, int x2, int y1, int y2)
         {
-            for (int y = Math.Min(y1, y2); y <= Math.Max(y1, y2); y++)
+            int brushRadius = BrushSize / 2;
+
+            if (x1 == x2) // Línea vertical
             {
-                canvas.DrawPixel(x, y, CurrentColor, BrushSize);
+                for (int y = Math.Min(y1, y2); y <= Math.Max(y1, y2); y++)
+                {
+                    for (int i = -brushRadius; i <= brushRadius; i++)
+                    {
+                        canvas.DrawPixel(x1 + i, y, CurrentColor, BrushSize);
+                    }
+                }
+            }
+            else // Línea horizontal
+            {
+                for (int x = Math.Min(x1, x2); x <= Math.Max(x1, x2); x++)
+                {
+                    for (int i = -brushRadius; i <= brushRadius; i++)
+                    {
+                        canvas.DrawPixel(x, y1 + i, CurrentColor, BrushSize);
+                    }
+                }
             }
         }
         private void SafeDrawPixel(int x, int y)
@@ -168,8 +188,8 @@ namespace PixelW
 
         public void DrawCircle(int dirX, int dirY, int radius)
         {
-            int centerX = X + dirX;
-            int centerY = Y + dirY;
+            int centerX = X + dirX*radius;
+            int centerY = Y + dirY*radius;
 
             int x = 0;
             int y = radius;
@@ -200,16 +220,28 @@ namespace PixelW
 
         private void DrawCirclePoints(int cx, int cy, int x, int y)
         {
-            SafeDrawPixel(cx + x, cy + y);
-            SafeDrawPixel(cx - x, cy + y);
-            SafeDrawPixel(cx + x, cy - y);
-            SafeDrawPixel(cx - x, cy - y);
-            SafeDrawPixel(cx + y, cy + x);
-            SafeDrawPixel(cx - y, cy + x);
-            SafeDrawPixel(cx + y, cy - x);
-            SafeDrawPixel(cx - y, cy - x);
+            DrawPixelWithBrushSize(cx + x, cy + y);
+            DrawPixelWithBrushSize(cx - x, cy + y);
+            DrawPixelWithBrushSize(cx + x, cy - y);
+            DrawPixelWithBrushSize(cx - x, cy - y);
+            DrawPixelWithBrushSize(cx + y, cy + x);
+            DrawPixelWithBrushSize(cx - y, cy + x);
+            DrawPixelWithBrushSize(cx + y, cy - x);
+            DrawPixelWithBrushSize(cx - y, cy - x);
         }
-        
+        private void DrawPixelWithBrushSize(int x, int y)
+        {
+            int brushSize = this.BrushSize; 
+            int halfSize = brushSize / 2;
+
+            for (int i = -halfSize; i <= halfSize; i++)
+            {
+                for (int j = -halfSize; j <= halfSize; j++)
+                {
+                    SafeDrawPixel(x + i, y + j);
+                }
+            }
+        }
 
         public int GetColorCount(string colorName, int x1, int y1, int x2, int y2)
         {
@@ -273,12 +305,18 @@ namespace PixelW
             BrushSize = k % 2 == 0 ? k - 1 : k;
         }
 
-        public void Fill() 
+        public void Fill()
         {
             if (CurrentColor == Color.Transparent)
-                throw new Exception("No se puede rellenar con color transparente");
+                throw new InvalidOperationException("No se puede rellenar con color transparente");
 
-            canvas.FloodFill(X, Y, CurrentColor);
+            if (!canvas.IsWithinBounds(X, Y))
+                throw new InvalidOperationException("Posición inicial fuera de los límites");
+
+            Color targetColor = canvas.GetPixel(X, Y);
+            if (targetColor == CurrentColor) return; // Evitar relleno innecesario
+
+            canvas.FloodFill(X, Y, targetColor, CurrentColor);
         }
     }
 }

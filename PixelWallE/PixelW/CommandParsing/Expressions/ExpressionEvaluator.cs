@@ -87,7 +87,7 @@ namespace PixelW.CommandParsing.Expressions
                     {
                         if (i >= op.Length - 1 && expression.Substring(i - op.Length + 1, op.Length) == op)
                         {
-                            // Verificar que no es un operador unario
+                            // verif que no es un operador unario
                             bool isUnary = op == "-" && (i == 0 || "+-*/%(".Contains(expression[i - 1]));
 
                             if (!isUnary)
