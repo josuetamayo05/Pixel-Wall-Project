@@ -35,7 +35,8 @@ namespace PixelW.CommandParsing.Expressions
                 }
             }
 
-            return EvaluateSimpleComparison(expr);
+            return EvaluateSimpleComparison(expr); 
+
         }
         public int EvaluateParameter(string param)
         {
@@ -54,7 +55,6 @@ namespace PixelW.CommandParsing.Expressions
         {
             expression = expression.Trim();
 
-            // manejar paréntesis (solo si existen)
             if (expression.Contains("(") && expression.Contains(")"))
             {
                 expression = HandleParentheses(expression);
@@ -77,7 +77,7 @@ namespace PixelW.CommandParsing.Expressions
             // evaluar en orden de precedencia 
             foreach (var operators in operatorGroups)
             {
-                // Buscar el operador más a la derecha para mantener asociatividad izquierda
+                // buscar el operador más a la derecha para mantener asociatividad izquierda
                 int opIndex = -1;
                 string opFound = null;
 
@@ -189,7 +189,7 @@ namespace PixelW.CommandParsing.Expressions
                 }
             }
 
-            return EvaluateNumericExpression(expr) != 0;
+            return EvaluateNumericExpression(expr) != 0;//valores numéricos como booleanos
         }
     }
 }

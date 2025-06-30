@@ -85,12 +85,10 @@ namespace PixelW
             menu.Items.Add("DrawLine(dirX, dirY, distance)");
             menu.Items.Add("GoTo [etiqueta] (condición)");
 
-            // Posiciona el menú cerca del cursor
             int position = txtEditor.SelectionStart;
             Point cursorPos = txtEditor.GetPositionFromCharIndex(position);
             menu.Show(txtEditor, cursorPos);
 
-            // Maneja la selección de un ítem
             menu.ItemClicked += (s, e) =>
             {
                 txtEditor.SelectedText = e.ClickedItem.Text;
@@ -238,12 +236,12 @@ namespace PixelW
         private List<string> GetAutoCompleteItems()
         {
             return new List<string>
-    {
-        "Spawn(", "Color(", "DrawLine(", "DrawCircle(", "DrawRectangle(",
-        "Fill()", "Size(", "GetActualX()", "GetActualY()", "GetCanvasSize()",
-        "GetColorCount(", "IsBrushColor(", "IsBrushSize(", "IsCanvasColor(",
-        "GoTo ["
-    };
+            {
+                "Spawn(", "Color(", "DrawLine(", "DrawCircle(", "DrawRectangle(",
+                "Fill()", "Size(", "GetActualX()", "GetActualY()", "GetCanvasSize()",
+                "GetColorCount(", "IsBrushColor(", "IsBrushSize(", "IsCanvasColor(",
+                "GoTo ["
+            };
         }
 
         private void ShowCustomCompletionMenu(List<string> commands)
@@ -265,17 +263,7 @@ namespace PixelW
                 txtEditor.SelectedText = e.ClickedItem.Text;
             };
         }
-        private void InitializeApplication()
-        {
-            panelLineNumbers.AttachToEditor(txtEditor);
-
-            variableManager = new VariableManager();
-            InitializeCanvas(InitialCanvasSize);
-            numCanvasSize.Value = InitialCanvasSize;
-
-            btnRun.Click += BtnRun_Click;
-            btnResize.Click += BtnResize_Click;
-        }
+        
 
 
         private void InitializeCanvas(int size)
@@ -356,37 +344,7 @@ namespace PixelW
             txtEditor.Select(start, length);
             txtEditor.SelectionBackColor = Color.LightPink;
         }
-        private void BtnResize_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                int newSize = (int)numCanvasSize.Value;
-                if (newSize < 10 || newSize > 640) 
-                {
-                    MessageBox.Show("El tamaño debe estar entre 10 y 640", "Error",
-                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                if (picCanvas.Image != null)
-                {
-                    picCanvas.Image.Dispose();
-                }
-
-                canvas = new Canvas(newSize);
-                robot = new WallE(canvas);
-
-                picCanvas.Image = canvas.ToBitmap();
-
-                MessageBox.Show($"Canvas redimensionado a {newSize}x{newSize}", "Éxito",
-                              MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al redimensionar: {ex.Message}", "Error",
-                              MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+        
 
         private void btnSave_Click(object sender, EventArgs e)
         {
@@ -417,14 +375,13 @@ namespace PixelW
             try
             {
                 int newSize = (int)numCanvasSize.Value;
-                if (newSize < 10 || newSize > 500) // Ajusta los límites según necesites
+                if (newSize < 10 || newSize > 500) 
                 {
                     MessageBox.Show("El tamaño debe estar entre 10 y 500", "Error",
                                   MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                // Liberar recursos de la imagen anterior
                 if (picCanvas.Image != null)
                 {
                     picCanvas.Image.Dispose();
@@ -434,7 +391,7 @@ namespace PixelW
                 canvas = new Canvas(newSize);
                 robot = new WallE(canvas);
 
-                // Actualizar la visualización
+                // actualizar la visualización
                 picCanvas.Image = canvas.ToBitmap();
                 picCanvas.Refresh();
 
@@ -485,7 +442,6 @@ namespace PixelW
 
                 int maxAvailableWidth = this.ClientSize.Width - txtEditor.Width - numCanvasSize.Width - 120;
                 int maxAvailableHeight = this.ClientSize.Height - 80;
-                // Calcular tamaño del canvas con zoom
                 int canvasDisplayWidth = canvas.Size * canvas.ZoomLevel;
                 int canvasDisplayHeight = canvas.Size * canvas.ZoomLevel;
                 // Determinar si necesitamos escalar
@@ -507,11 +463,9 @@ namespace PixelW
                 }
                 else
                 {
-                    // Usar modo normal para tamaño original
                     picCanvas.SizeMode = PictureBoxSizeMode.Normal;
                 }
 
-                // Aplicar el tamaño calculado
                 picCanvas.Size = new Size(canvasDisplayWidth, canvasDisplayHeight);
 
                 // Reposicionar el PictureBox para centrarlo

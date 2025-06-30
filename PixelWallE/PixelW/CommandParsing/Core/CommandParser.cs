@@ -44,7 +44,6 @@ namespace PixelW
                 new DrawCircleCommand(robot, variables, _evaluator, _labelManager),
                 new GetColorCountCommand(robot,variables,_evaluator,_labelManager),
                 new DrawRectangleCommand(robot,variables,_evaluator,_labelManager),
-
             };
         }
         
@@ -75,7 +74,6 @@ namespace PixelW
             var result = new ParseResult();
             var lines = code.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
-            //idd todas las etiq
             for (int i = 0; i < lines.Length; i++)
             {
                 string line = lines[i].Trim();
